@@ -14,8 +14,8 @@ export function LoginPage() {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { assetMap } = useSiteAssets();
-  const editorialSrc = assetMap['login.editorial'];
+  const { assetMap, isReady } = useSiteAssets();
+  const editorialSrc = isReady ? assetMap['login.editorial'] : null;
   const isSignup = mode === 'signup';
   const requestedRedirect = useMemo(() => new URLSearchParams(window.location.search).get('redirect'), []);
 
@@ -65,7 +65,12 @@ export function LoginPage() {
   return (
     <div className="login-page">
       <div className="login-left">
-        <header className="login-logo"><a href="index.html" aria-label="Spark Stage home"><BrandLogo /></a></header>
+        <header className="login-logo">
+          <a href="index.html" className="login-back-btn" aria-label="Back to homepage" title="Back to homepage">
+            &#8592;
+          </a>
+          <a href="index.html" aria-label="Spark Stage home"><BrandLogo /></a>
+        </header>
         <main className="login-form-area">
           <h2 className="login-heading">LOG IN OR SIGN UP</h2>
           <form className="login-form" onSubmit={submitAuth}>
@@ -127,7 +132,11 @@ export function LoginPage() {
         <footer className="login-help"><button type="button" className="inline-link is-placeholder" aria-disabled="true" data-ui="placeholder">HELP</button></footer>
       </div>
       <div className="login-right">
-        <img src={editorialSrc} alt="Fashion Editorial" />
+        {editorialSrc ? (
+          <img src={editorialSrc} alt="Fashion Editorial" />
+        ) : (
+          <div className="login-editorial-skeleton" aria-hidden="true" />
+        )}
       </div>
     </div>
   );
