@@ -20,25 +20,39 @@ function HomeHeroSection({ section, skeletonMode }: { section: HeroSection; skel
   const videoRef = useRef<HTMLVideoElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const [isPaused, setIsPaused] = useState(false);
+  const isFirstSection = section.id === 'home';
 
   useEffect(() => {
-    if (!skeletonMode && contentRef.current) {
-      gsap.fromTo(contentRef.current, 
+    if (skeletonMode || !contentRef.current) return;
+
+    if (isFirstSection) {
+      // First hero is always visible on load — animate in immediately,
+      // no ScrollTrigger, never reverse.
+      gsap.fromTo(
+        contentRef.current,
+        { opacity: 0, y: 24 },
+        { opacity: 1, y: 0, duration: 1.4, ease: 'power3.out', delay: 0.3 },
+      );
+    } else {
+      // Subsequent sections animate in when scrolled into view.
+      // "play none none none" = play once, never reverse when scrolling back up.
+      gsap.fromTo(
+        contentRef.current,
         { opacity: 0, y: 30 },
-        { 
-          opacity: 1, 
-          y: 0, 
-          duration: 1.2, 
-          ease: "power3.out",
+        {
+          opacity: 1,
+          y: 0,
+          duration: 1.2,
+          ease: 'power3.out',
           scrollTrigger: {
             trigger: contentRef.current,
-            start: "top 85%",
-            toggleActions: "play none none reverse"
-          }
-        }
+            start: 'top 85%',
+            toggleActions: 'play none none none',
+          },
+        },
       );
     }
-  }, [skeletonMode]);
+  }, [skeletonMode, isFirstSection]);
 
   useEffect(() => {
     const video = videoRef.current;
