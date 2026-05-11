@@ -16,11 +16,11 @@
  */
 
 import { lazy, Suspense, useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Session } from '@supabase/supabase-js';
 import { AdminRail, AdminSidebar } from '../components/admin';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { getCurrentUserRole } from '../services/auth';
-import { useSearchParamState } from '../hooks/useSearchParamState';
 import { ADMIN_VIEWS, type AdminView } from './admin/types';
 
 // Section components are lazy-loaded so each section's bundle is only
@@ -56,7 +56,13 @@ export function AdminPage() {
   const [role, setRole] = useState<'admin' | 'customer' | null>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
-  const [tab, setTab] = useSearchParamState<AdminView>('tab', 'inventory', ADMIN_VIEWS);
+  const navigate = useNavigate();
+  const { tab: rawTab } = useParams<{ tab: string }>();
+  const tab: AdminView = (rawTab && (ADMIN_VIEWS as readonly string[]).includes(rawTab))
+    ? rawTab as AdminView
+    : 'inventory';
+
+  const setTab = (next: AdminView) => navigate(`/admin/${next}`, { replace: true });
 
   // ── Auth ──────────────────────────────────────────────────────────────────
 
@@ -120,13 +126,10 @@ export function AdminPage() {
 
   useEffect(() => {
     if (!isSupabaseConfigured || isCheckingAuth) return;
-    if (!session) {
-      window.location.href = `/login.html?redirect=${encodeURIComponent('/admin.html')}`;
-      return;
-    }
+    // ProtectedRoute in router.tsx handles redirect to /login and / for unauthorized.
+    // AdminPage only needs to handle the role check for the "use another account" UI.
     if (role && role !== 'admin') {
       setRole(null);
-      window.location.href = '/login.html';
     }
   }, [isCheckingAuth, role, session]);
 
@@ -172,7 +175,7 @@ export function AdminPage() {
             type="button"
             onClick={async () => {
               await supabase?.auth.signOut();
-              window.location.href = '/login.html';
+              window.location.href = '/';
             }}
           >
             Use another account
@@ -197,7 +200,7 @@ export function AdminPage() {
 
   const signOut = async () => {
     await supabase?.auth.signOut();
-    window.location.href = '/login.html';
+    window.location.href = '/';
   };
 
   return (

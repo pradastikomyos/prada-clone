@@ -1,13 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { Link } from 'react-router-dom';
 import { Pause, Play } from '@phosphor-icons/react';
 import { useUIStore } from '../store/uiStore';
 import { useUIState } from '../components/ui/UIStateContext';
 import { MenuIcon, SearchIcon } from '../components/ui/Icons';
 import { BrandLogo } from '../components/ui/BrandLogo';
-import { HomepageMenu } from '../components/navigation/HomepageMenu';
-import { SearchOverlay } from '../components/navigation/SearchOverlay';
 import { HeroMediaSkeleton, AdminTableSkeleton } from '../components/ui/Skeletons';
 import { UserHeaderActions } from '../components/ui/UserHeaderActions';
 import { CartHeaderButton } from '../components/ui/CartHeaderButton';
@@ -106,7 +105,7 @@ function HomeHeroSection({ section, skeletonMode }: { section: HeroSection; skel
           <h2>{section.title}</h2>
           <div className="cta-group">
             {section.links.map((link) => (
-              <a href={link.href} className="cta-link" key={link.text}>{link.text}</a>
+              <Link to={link.href} className="cta-link" key={link.text}>{link.text}</Link>
             ))}
           </div>
         </div>
@@ -160,9 +159,9 @@ export function HomePage() {
           </button>
         </div>
         <div className="header-center">
-          <a href="#home" className="logo-link" aria-label="Spark Stage home">
+          <Link to="/" className="logo-link" aria-label="Spark Stage home">
             <BrandLogo className="logo-svg" />
-          </a>
+          </Link>
         </div>
         <div className="header-right">
           <UserHeaderActions />

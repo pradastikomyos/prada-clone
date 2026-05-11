@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { CloseIcon, MenuIcon, SearchIcon } from '../ui/Icons';
 import { menuData } from '../../data/navigation';
 
@@ -9,7 +10,7 @@ export function ListingMenu() {
     { label: 'New Arrivals', sections: menuData['new-arrivals'].map((section) => ({ title: section.header ?? 'Categories', links: section.links })) },
     { label: 'Women', sections: [{ title: 'Categories', links: menuData.women[0].links }] },
     { label: 'Men', sections: [{ title: 'Categories', links: menuData.men[0].links }] },
-    { label: 'Pradasphere', sections: [{ title: 'Explore', links: [{ text: 'Campaigns', href: 'index.html' }, { text: 'Fashion Shows', href: 'index.html' }, { text: 'Store Locator', href: 'index.html' }] }] },
+    { label: 'Pradasphere', sections: [{ title: 'Explore', links: [{ text: 'Campaigns', href: '/' }, { text: 'Fashion Shows', href: '/' }, { text: 'Store Locator', href: '/' }] }] },
   ], []);
   const active = activeIndex === null ? undefined : listingMenuData[activeIndex];
 
@@ -77,7 +78,7 @@ export function ListingMenu() {
                   {section.links.map((link) => (
                     <li key={link.text}>
                       {link.href ? (
-                        <a className="menu-link" href={link.href}>{link.text}</a>
+                        <Link className="menu-link" to={link.href}>{link.text}</Link>
                       ) : (
                         <button className="menu-link is-placeholder" type="button" aria-disabled="true" data-ui="placeholder">
                           {link.text}

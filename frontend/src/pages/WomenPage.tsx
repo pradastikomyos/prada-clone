@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { useQueries } from '@tanstack/react-query';
 import { ShopHeader } from '../components/layout/ShopHeader';
 import { WomenCategorySectionSkeleton } from '../components/ui/Skeletons';
@@ -106,8 +107,8 @@ export function WomenPage() {
             <section className="product-grid product-grid-3">
               {section.products.map((product) =>
                 product.slug ? (
-                  <a
-                    href={`product.html?slug=${encodeURIComponent(product.slug)}`}
+                  <Link
+                    to={`/product/${encodeURIComponent(product.slug)}`}
                     className="product-card"
                     key={product.key}
                   >
@@ -118,7 +119,7 @@ export function WomenPage() {
                       <p className="product-name">{product.name}</p>
                       <p className="product-price">{product.priceLabel}</p>
                     </div>
-                  </a>
+                  </Link>
                 ) : (
                   <button
                     type="button"

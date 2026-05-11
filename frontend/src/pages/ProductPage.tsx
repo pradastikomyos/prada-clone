@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useUIStore } from '../store/uiStore';
 import { PdpSkeleton } from '../components/ui/Skeletons';
@@ -70,13 +71,16 @@ export function ProductPage() {
   const { setSearchOpen, setCartDrawerOpen } = useUIStore();
   const queryClient = useQueryClient();
   const cartSummary = useCartSummary();
+  const navigate = useNavigate();
   const [addError, setAddError] = useState<string | null>(null);
 
-  const params = useMemo(() => new URLSearchParams(window.location.search), []);
-  const slug = params.get('slug');
-  const legacyName = params.get('name') ?? params.get('id');
+  // Support both /product/:slug (new) and ?slug= / ?name= (legacy redirects)
+  const { slug: paramSlug } = useParams<{ slug: string }>();
+  const searchParams = useMemo(() => new URLSearchParams(window.location.search), []);
+  const legacySlug = searchParams.get('slug');
+  const legacyName = searchParams.get('name') ?? searchParams.get('id');
 
-  const fallbackSlug = slug ?? (legacyName ? slugify(legacyName) : null);
+  const fallbackSlug = paramSlug ?? legacySlug ?? (legacyName ? slugify(legacyName) : null);
 
   const productQuery = useQuery({
     queryKey: ['product-detail', fallbackSlug],
@@ -107,7 +111,6 @@ export function ProductPage() {
       const match = staticIndex.find((item) => item.name === legacyName);
       if (match) return match;
     }
-
     if (fallbackSlug) {
       const match = staticIndex.find((item) => slugify(item.name) === fallbackSlug);
       if (match) return match;
@@ -129,7 +132,7 @@ export function ProductPage() {
     onError: (error) => {
       if (error instanceof Error && error.message === LOGIN_REQUIRED) {
         const redirect = window.location.pathname + window.location.search;
-        window.location.href = `/login.html?redirect=${encodeURIComponent(redirect)}`;
+        navigate(`/login?redirect=${encodeURIComponent(redirect)}`);
         return;
       }
       setAddError(error instanceof Error ? error.message : 'Failed to add to bag.');
@@ -150,14 +153,14 @@ export function ProductPage() {
     <div className="zara-pdp">
       <header className="zara-header">
         <div className="zara-header-left">
-          <button className="zara-back-btn" onClick={() => window.history.back()}>
+          <button className="zara-back-btn" onClick={() => navigate(-1)}>
             &#8592;
           </button>
         </div>
         <div className="zara-header-right">
           <button className="zara-utility-link" onClick={() => setSearchOpen(true)}>CARI</button>
           <div className="zara-utility-group">
-            <a className="zara-utility-link" href="login.html">LOG IN</a>
+            <Link className="zara-utility-link" to="/login">LOG IN</Link>
             <button className="zara-utility-link">BANTUAN</button>
             <button
               type="button"

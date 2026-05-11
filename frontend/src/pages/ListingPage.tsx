@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Pause, Play } from '@phosphor-icons/react';
 import { useUIState } from '../components/ui/UIStateContext';
@@ -191,11 +192,9 @@ export function ListingPage({ kind }: { kind: ListingKind }) {
         <section className="prada-product-grid">
           {products.map((product) => {
             const slug = productSlugByName.get(product.name);
-            const href = slug
-              ? `product.html?slug=${encodeURIComponent(slug)}`
-              : `product.html?name=${encodeURIComponent(product.name)}`;
+          const href = slug ? `/product/${encodeURIComponent(slug)}` : '/';
             return (
-              <a href={href} className="prada-product-card" key={product.name}>
+              <Link to={href} className="prada-product-card" key={product.name}>
                 <div className="prada-product-image">
                   <img src={product.image} alt={product.alt ?? product.name} loading="lazy" />
                 </div>
@@ -209,7 +208,7 @@ export function ListingPage({ kind }: { kind: ListingKind }) {
                     </div>
                   )}
                 </div>
-              </a>
+              </Link>
             );
           })}
         </section>

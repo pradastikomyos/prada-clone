@@ -1,4 +1,5 @@
 import { FormEvent, useMemo, useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { ViewIcon, ViewOffIcon } from '@hugeicons/core-free-icons';
 import { BrandLogo } from '../components/ui/BrandLogo';
@@ -16,6 +17,7 @@ export function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { assetMap, isReady } = useSiteAssets();
   const editorialSrc = isReady ? assetMap['login.editorial'] : null;
+  const navigate = useNavigate();
   const isSignup = mode === 'signup';
   const requestedRedirect = useMemo(() => new URLSearchParams(window.location.search).get('redirect'), []);
 
@@ -54,7 +56,7 @@ export function LoginPage() {
       }
 
       const role = userId ? await getUserRole(userId) : null;
-      window.location.href = resolvePostLoginPath(role, requestedRedirect);
+      navigate(resolvePostLoginPath(role, requestedRedirect));
     } catch (error) {
       setAuthError(error instanceof Error ? error.message : 'Authentication failed.');
     } finally {
@@ -66,10 +68,10 @@ export function LoginPage() {
     <div className="login-page">
       <div className="login-left">
         <header className="login-logo">
-          <a href="index.html" className="login-back-btn" aria-label="Back to homepage" title="Back to homepage">
+          <Link to="/" className="login-back-btn" aria-label="Back to homepage" title="Back to homepage">
             &#8592;
-          </a>
-          <a href="index.html" aria-label="Spark Stage home"><BrandLogo /></a>
+          </Link>
+          <Link to="/" aria-label="Spark Stage home"><BrandLogo /></Link>
         </header>
         <main className="login-form-area">
           <h2 className="login-heading">LOG IN OR SIGN UP</h2>

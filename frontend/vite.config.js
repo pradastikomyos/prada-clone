@@ -10,16 +10,6 @@ export default defineConfig({
     },
   },
   plugins: [react(), tailwindcss()],
-  build: {
-    rollupOptions: {
-      input: {
-        index: resolve(__dirname, 'index.html'),
-        women: resolve(__dirname, 'women.html'),
-        men: resolve(__dirname, 'men.html'),
-        newArrivals: resolve(__dirname, 'new-arrivals.html'),
-        login: resolve(__dirname, 'login.html'),
-        admin: resolve(__dirname, 'admin.html'),
-      },
-    },
-  },
+  // Single-entry SPA — React Router handles all client-side routing.
+  // No rollupOptions.input needed; Vite defaults to index.html.
 });

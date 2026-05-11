@@ -11,15 +11,15 @@ export const menuData: Record<string, MenuSection[]> = {
     {
       header: 'FOR HER',
       links: [
-        { text: "Women's New Arrivals", href: 'new-arrivals.html' },
-        { text: 'Spring Summer 2026', href: 'women.html' },
+        { text: "Women's New Arrivals", href: '/new-arrivals' },
+        { text: 'Spring Summer 2026', href: '/women' },
       ],
     },
     {
       header: 'FOR HIM',
       links: [
-        { text: "Men's New Arrivals", href: 'men.html' },
-        { text: 'Spring Summer 2026', href: 'men.html' },
+        { text: "Men's New Arrivals", href: '/men' },
+        { text: 'Spring Summer 2026', href: '/men' },
       ],
     },
   ],
@@ -27,13 +27,13 @@ export const menuData: Record<string, MenuSection[]> = {
     {
       header: null,
       links: [
-        { text: 'Ready to wear', href: 'women.html' },
+        { text: 'Ready to wear', href: '/women' },
       ],
     },
     {
       header: 'HIGHLIGHTS',
       links: [
-        { text: 'Spring Summer 2026', href: 'women.html' },
+        { text: 'Spring Summer 2026', href: '/women' },
       ],
     },
   ],
@@ -41,13 +41,13 @@ export const menuData: Record<string, MenuSection[]> = {
     {
       header: null,
       links: [
-        { text: 'Ready to wear', href: 'men.html' },
+        { text: 'Ready to wear', href: '/men' },
       ],
     },
     {
       header: 'HIGHLIGHTS',
       links: [
-        { text: 'Spring Summer 2026', href: 'men.html' },
+        { text: 'Spring Summer 2026', href: '/men' },
       ],
     },
   ],

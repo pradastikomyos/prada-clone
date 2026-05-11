@@ -27,8 +27,8 @@ export async function getUserRole(userId: string): Promise<AppRole | null> {
 
 export function resolvePostLoginPath(role: AppRole | null, requestedRedirect: string | null) {
   if (role === 'admin') {
-    return requestedRedirect && requestedRedirect.startsWith('/') ? requestedRedirect : '/admin.html';
+    return requestedRedirect && requestedRedirect.startsWith('/') ? requestedRedirect : '/admin';
   }
 
-  return requestedRedirect && !requestedRedirect.includes('admin.html') ? requestedRedirect : '/index.html';
+  return requestedRedirect && !requestedRedirect.includes('admin') ? requestedRedirect : '/';
 }

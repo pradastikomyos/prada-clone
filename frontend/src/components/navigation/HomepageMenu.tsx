@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { CloseIcon, SearchIcon } from '../ui/Icons';
 import { menuCategories, menuData } from '../../data/navigation';
 
@@ -114,7 +115,7 @@ export function HomepageMenu({ isOpen, onClose, onSearchClick }: { isOpen: boole
                 {section.links.map((link) => (
                   <li key={link.text}>
                     {link.href ? (
-                      <a className="menu-link" href={link.href}>{link.text}</a>
+                      <Link className="menu-link" to={link.href}>{link.text}</Link>
                     ) : (
                       <button className="menu-link is-placeholder" type="button" aria-disabled="true" data-ui="placeholder">
                         {link.text}

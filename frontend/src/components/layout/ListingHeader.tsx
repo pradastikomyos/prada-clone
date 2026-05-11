@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { BrandLogo } from '../ui/BrandLogo';
 import { SearchIcon } from '../ui/Icons';
 import { UserHeaderActions } from '../ui/UserHeaderActions';
@@ -17,7 +18,7 @@ export function ListingHeader() {
           <span>Search</span>
         </button>
       </div>
-      <a href="index.html" className="listing-logo" aria-label="Spark Stage home"><BrandLogo /></a>
+      <Link to="/" className="listing-logo" aria-label="Spark Stage home"><BrandLogo /></Link>
       <div className="listing-header-right">
         <UserHeaderActions />
         <CartHeaderButton className="listing-contact" />

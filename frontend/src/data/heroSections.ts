@@ -19,8 +19,8 @@ export function buildHomeSections(
       mediaType: 'video',
       src: get('home.hero.video'),
       links: [
-        { text: 'For Her', href: 'women.html' },
-        { text: 'For Him', href: 'men.html' },
+        { text: 'For Her', href: '/women' },
+        { text: 'For Him', href: '/men' },
       ],
     },
     {
@@ -28,28 +28,28 @@ export function buildHomeSections(
       title: "Women's New Arrivals",
       mediaType: 'video',
       src: get('women.new-arrivals.hero.video'),
-      links: [{ text: "Women's New Arrivals", href: 'new-arrivals.html' }],
+      links: [{ text: "Women's New Arrivals", href: '/new-arrivals' }],
     },
     {
       id: 'spring-summer-women',
       title: 'Spring Summer 2026',
       mediaType: 'image',
       src: get('home.spring-summer.women.mosaic'),
-      links: [{ text: 'Spring Summer 2026', href: 'women.html' }],
+      links: [{ text: 'Spring Summer 2026', href: '/women' }],
     },
     {
       id: 'new-arrivals-men',
       title: "Men's New Arrivals",
       mediaType: 'image',
       src: get('home.spring-summer.men.mosaic'),
-      links: [{ text: "Men's New Arrivals", href: 'men.html' }],
+      links: [{ text: "Men's New Arrivals", href: '/men' }],
     },
     {
       id: 'spring-summer-men',
       title: 'Spring Summer 2026',
       mediaType: 'video',
       src: get('men.new-arrivals.hero.video'),
-      links: [{ text: 'Spring Summer 2026', href: 'men.html' }],
+      links: [{ text: 'Spring Summer 2026', href: '/men' }],
     },
   ];
 }

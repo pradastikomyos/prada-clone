@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
 import { Minus, Plus, Trash, X } from '@phosphor-icons/react';
 import { useUIStore } from '../../store/uiStore';
 import { isSupabaseConfigured, supabase } from '../../lib/supabase';
@@ -148,9 +149,9 @@ export function CartDrawer() {
 
   const guest = !userId;
   const loginHref = (() => {
-    if (typeof window === 'undefined') return '/login.html';
+    if (typeof window === 'undefined') return '/login';
     const redirect = window.location.pathname + window.location.search;
-    return `/login.html?redirect=${encodeURIComponent(redirect)}`;
+    return `/login?redirect=${encodeURIComponent(redirect)}`;
   })();
 
   return (
@@ -199,7 +200,7 @@ export function CartDrawer() {
           ) : items.length === 0 ? (
             <div className="cart-drawer-empty">
               <p>Your bag is empty</p>
-              <a href="/index.html">Continue shopping</a>
+              <Link to="/">Continue shopping</Link>
             </div>
           ) : (
             <ul className="cart-drawer-list">

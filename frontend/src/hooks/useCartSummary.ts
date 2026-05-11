@@ -95,7 +95,7 @@ export function useAuthUser(): AuthUser {
 
   const signOut = async () => {
     await supabase?.auth.signOut();
-    window.location.href = '/index.html';
+    window.location.href = '/';
   };
 
   return {

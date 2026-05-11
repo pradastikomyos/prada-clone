@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { SignOut } from '@phosphor-icons/react';
 import { useAuthUser } from '../../hooks/useCartSummary';
 import { LogoutConfirmDialog } from './LogoutConfirmDialog';
@@ -21,9 +22,9 @@ export function UserHeaderActions({ className }: UserHeaderActionsProps) {
 
   if (!isLoggedIn) {
     return (
-      <a href="login.html" className={className}>
+      <Link to="/login" className={className}>
         Account
-      </a>
+      </Link>
     );
   }
 
