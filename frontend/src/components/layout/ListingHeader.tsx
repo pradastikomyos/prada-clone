@@ -13,7 +13,7 @@ export function ListingHeader() {
     <header className="listing-header">
       <div className="listing-header-left">
         <ListingMenu />
-        <button className="listing-search-link is-placeholder" type="button" aria-label="Search" onClick={() => setSearchOpen(true)} style={{ marginLeft: '16px' }}>
+        <button className="listing-search-link is-placeholder" type="button" aria-label="Search" onClick={() => setSearchOpen(true)}>
           <SearchIcon />
           <span>Search</span>
         </button>

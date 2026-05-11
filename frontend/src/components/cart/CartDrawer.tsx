@@ -12,7 +12,6 @@ import {
 } from '../../services/cart';
 import { createDokuCheckout } from '../../services/commerce';
 import type { CartItem } from '../../types/commerce';
-import '../../styles/cart.css';
 
 const IDR = new Intl.NumberFormat('id-ID', {
   style: 'currency',
@@ -127,7 +126,7 @@ export function CartDrawer() {
         customer: {
           name: email ?? 'Customer',
           email: email ?? undefined,
-          phone: '',
+          // phone intentionally omitted — DOKU rejects empty string, field is optional
         },
         items: items.map((item) => ({
           product_id: item.product_id,

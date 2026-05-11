@@ -6,7 +6,6 @@ import { BrandLogo } from '../components/ui/BrandLogo';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { getUserRole, resolvePostLoginPath } from '../services/auth';
 import { useSiteAssets } from '../hooks/useSiteAssets';
-import '../styles/login.css';
 
 export function LoginPage() {
   const [mode, setMode] = useState<'login' | 'signup'>('login');

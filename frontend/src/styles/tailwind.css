@@ -1,1 +1,9 @@
 @import "tailwindcss";
+
+/* Exclude plain CSS files from Tailwind v4 source scanning.
+   These files use standard CSS syntax (not Tailwind) and would
+   cause parse errors if Tailwind tries to process them. */
+@source not "../styles/login.css";
+@source not "../styles/cart.css";
+@source not "../styles/shop.css";
+@source not "../styles/style.css";

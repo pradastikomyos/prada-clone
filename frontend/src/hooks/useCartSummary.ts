@@ -40,6 +40,7 @@ type AuthUser = {
   /** Display name: full_name from profiles, or email prefix, or null if guest. */
   displayName: string | null;
   email: string | null;
+  role: 'admin' | 'customer' | null;
   isLoggedIn: boolean;
   signOut: () => Promise<void>;
 };
@@ -80,7 +81,7 @@ export function useAuthUser(): AuthUser {
       if (!userId || !supabase) return null;
       const { data } = await supabase
         .from('profiles')
-        .select('full_name')
+        .select('full_name, role')
         .eq('id', userId)
         .maybeSingle();
       return data;
@@ -92,6 +93,7 @@ export function useAuthUser(): AuthUser {
   const fullName = profileQuery.data?.full_name as string | null | undefined;
   const emailPrefix = email ? email.split('@')[0] : null;
   const displayName = fullName ?? emailPrefix ?? null;
+  const role = (profileQuery.data?.role ?? null) as 'admin' | 'customer' | null;
 
   const signOut = async () => {
     await supabase?.auth.signOut();
@@ -102,6 +104,7 @@ export function useAuthUser(): AuthUser {
     userId,
     displayName,
     email,
+    role,
     isLoggedIn: Boolean(userId),
     signOut,
   };

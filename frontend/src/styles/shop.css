@@ -428,6 +428,10 @@ a { text-decoration: none; color: inherit; }
   object-fit: cover;
 }
 
+/* PDP gallery image filter modifiers — subtle visual variation for detail shots */
+.zara-image-item--dim img { filter: brightness(0.95); }
+.zara-image-item--contrast img { filter: contrast(1.05); }
+
 .zara-pdp-right {
   width: 50%;
   height: 100vh;
@@ -624,6 +628,11 @@ a { text-decoration: none; color: inherit; }
   font-family: inherit;
   font-size: 14px;
   line-height: 1;
+}
+
+/* Search button in listing header sits to the right of the menu button */
+.listing-search-link {
+  margin-left: 16px;
 }
 
 .listing-menu-btn {
@@ -3124,4 +3133,300 @@ a:focus-visible {
 
 .admin-bopis-instructions strong {
   color: #1C1917;
+}
+
+/* ============================================================
+   CHECKOUT RESULT PAGE
+   ============================================================ */
+
+.checkout-result-page {
+  min-height: 100vh;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+.checkout-result-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px 0;
+}
+
+.checkout-result-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 48px 24px 80px;
+  max-width: 520px;
+  margin: 0 auto;
+  width: 100%;
+  gap: 16px;
+}
+
+/* ── Status icons ─────────────────────────────────────────── */
+
+.checkout-result-icon {
+  margin-bottom: 8px;
+}
+
+/* Animated checkmark SVG */
+.checkout-checkmark-svg {
+  display: block;
+}
+
+.checkout-checkmark-circle {
+  stroke-dasharray: 226; /* circumference of r=36: 2π×36 ≈ 226 */
+  stroke-dashoffset: 226;
+  animation: checkout-circle-draw 0.6s cubic-bezier(0.65, 0, 0.45, 1) 0.1s forwards;
+}
+
+.checkout-checkmark-path {
+  /* approximate path length for d="M22 41L34 53L58 28" */
+  stroke-dasharray: 60;
+  stroke-dashoffset: 60;
+  animation: checkout-check-draw 0.4s cubic-bezier(0.65, 0, 0.45, 1) 0.65s forwards;
+}
+
+@keyframes checkout-circle-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes checkout-check-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+/* Success section fade-in after checkmark */
+.checkout-result-success-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  animation: checkout-section-in 0.5s ease 0.9s both;
+}
+
+@keyframes checkout-section-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.checkout-result-spinner {
+  width: 48px;
+  height: 48px;
+  border: 2.5px solid #e0e0e0;
+  border-top-color: #000;
+  border-radius: 50%;
+  animation: checkout-spin 0.8s linear infinite;
+}
+
+@keyframes checkout-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Typography ───────────────────────────────────────────── */
+
+.checkout-result-eyebrow {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #888;
+  margin: 0;
+}
+
+.checkout-result-eyebrow--success {
+  color: #16a34a;
+  font-weight: 600;
+  letter-spacing: 3px;
+}
+
+.checkout-result-title {
+  font-size: 26px;
+  font-weight: 400;
+  letter-spacing: -0.3px;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.checkout-result-title--success {
+  font-size: 22px;
+  color: #111;
+}
+
+.checkout-result-body {
+  font-size: 14px;
+  line-height: 1.7;
+  color: #444;
+  margin: 0;
+  max-width: 380px;
+}
+
+.checkout-result-body--muted {
+  font-size: 13px;
+  color: #888;
+}
+
+.checkout-result-invoice {
+  font-size: 12px;
+  color: #666;
+  letter-spacing: 0.3px;
+  margin: 0;
+}
+
+/* ── Pickup section ───────────────────────────────────────── */
+
+.checkout-result-pickup {
+  width: 100%;
+  border: 1px solid #e8e8e8;
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.checkout-result-pickup-label {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #888;
+  margin: 0;
+}
+
+.checkout-result-pickup-code {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: 4px;
+  color: #000;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.checkout-result-pickup-hint {
+  font-size: 12px;
+  color: #666;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.checkout-result-qr {
+  margin-top: 4px;
+  padding: 12px;
+  border: 1px solid #f0f0f0;
+  display: inline-flex;
+}
+
+.checkout-result-qr canvas {
+  display: block;
+}
+
+/* ── Order summary ────────────────────────────────────────── */
+
+.checkout-result-summary {
+  width: 100%;
+  border-top: 1px solid #e8e8e8;
+  padding-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+}
+
+.checkout-result-summary-label {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #888;
+  margin: 0;
+  text-align: center;
+}
+
+.checkout-result-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.checkout-result-item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.checkout-result-item-name {
+  flex: 1;
+  color: #000;
+}
+
+.checkout-result-item-qty {
+  color: #888;
+  font-size: 12px;
+}
+
+.checkout-result-item-price {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.checkout-result-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #e8e8e8;
+  padding-top: 12px;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+}
+
+.checkout-result-total strong {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+/* ── CTAs ─────────────────────────────────────────────────── */
+
+.checkout-result-cta {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 14px 40px;
+  background: #000;
+  color: #fff;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.checkout-result-cta:hover {
+  opacity: 0.8;
+}
+
+.checkout-result-cta-secondary {
+  background: none;
+  border: 1px solid #000;
+  color: #000;
+  padding: 12px 32px;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background-color 0.2s;
+}
+
+.checkout-result-cta-secondary:hover {
+  background: #f5f5f5;
+}
+
+@media (max-width: 480px) {
+  .checkout-result-title { font-size: 22px; }
+  .checkout-result-pickup-code { font-size: 22px; letter-spacing: 3px; }
 }

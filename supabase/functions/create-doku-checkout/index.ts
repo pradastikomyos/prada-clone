@@ -185,8 +185,8 @@ Deno.serve(async (req) => {
         amount: totalAmount,
         invoice_number: invoiceNumber,
         currency: 'IDR',
-        callback_url: `${siteUrl}/checkout-result.html?invoice=${encodeURIComponent(invoiceNumber)}`,
-        callback_url_result: `${siteUrl}/checkout-result.html?invoice=${encodeURIComponent(invoiceNumber)}`,
+        callback_url: `${siteUrl}/checkout-result?invoice=${encodeURIComponent(invoiceNumber)}`,
+        callback_url_result: `${siteUrl}/checkout-result?invoice=${encodeURIComponent(invoiceNumber)}`,
         auto_redirect: true,
         line_items: lineItems.map((item) => ({
           id: item.sku,
@@ -202,8 +202,8 @@ Deno.serve(async (req) => {
       },
       customer: {
         name: payload.customer.name.trim(),
-        email: payload.customer.email?.trim(),
-        phone: payload.customer.phone?.trim(),
+        ...(payload.customer.email?.trim() ? { email: payload.customer.email.trim() } : {}),
+        ...(payload.customer.phone?.trim() ? { phone: payload.customer.phone.trim() } : {}),
       },
       additional_info: {
         override_notification_url: overrideNotificationUrl,

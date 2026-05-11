@@ -22,7 +22,6 @@ import { AdminRail, AdminSidebar } from '../components/admin';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { getCurrentUserRole } from '../services/auth';
 import { ADMIN_VIEWS, type AdminView } from './admin/types';
-import '../styles/tailwind.css';
 
 // Section components are lazy-loaded so each section's bundle is only
 // downloaded when the admin first navigates to that tab.

@@ -182,17 +182,17 @@ export function ProductPage() {
             <div className="zara-image-item">
               <img src={resolved.image} alt={resolved.alt} />
             </div>
-            <div className="zara-image-item">
-              <img src={resolved.image} alt={`${resolved.alt} detail 1`} style={{ filter: 'brightness(0.95)' }} />
+            <div className="zara-image-item zara-image-item--dim">
+              <img src={resolved.image} alt={`${resolved.alt} detail 1`} />
             </div>
-            <div className="zara-image-item">
-              <img src={resolved.image} alt={`${resolved.alt} detail 2`} style={{ filter: 'contrast(1.05)' }} />
+            <div className="zara-image-item zara-image-item--contrast">
+              <img src={resolved.image} alt={`${resolved.alt} detail 2`} />
             </div>
           </div>
         </div>
 
         <div className="zara-pdp-right">
-          <div className="zara-product-info" style={{ width: '394px' }}>
+          <div className="zara-product-info">
             <h1 className="zara-product-title">{resolved.name.toUpperCase()}</h1>
             {resolved.priceLabel ? <p className="zara-product-price">{resolved.priceLabel}</p> : null}
 
