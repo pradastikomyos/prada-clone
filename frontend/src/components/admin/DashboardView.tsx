@@ -10,7 +10,7 @@ import { AdminIcon } from './AdminIcon';
 import { NumberTicker } from '../ui/number-ticker';
 import { MetricSkeleton } from './AdminSkeleton';
 
-type AdminView = 'dashboard' | 'inventory' | 'orders' | 'bopis' | 'doku';
+import type { AdminView } from '../../pages/admin/types';
 
 type DashboardViewProps = {
   totalProducts: number;

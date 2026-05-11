@@ -13,8 +13,7 @@ import {
 } from '@hugeicons/core-free-icons';
 import { NumberTicker } from '../ui/number-ticker';
 import { AdminIcon } from './AdminIcon';
-
-type AdminView = 'dashboard' | 'inventory' | 'orders' | 'bopis' | 'doku';
+import type { AdminView } from '../../pages/admin/types';
 
 type AdminSidebarProps = {
   email?: string;

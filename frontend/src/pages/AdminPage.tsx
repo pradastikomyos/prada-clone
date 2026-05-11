@@ -1,65 +1,64 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+/**
+ * AdminPage — auth guard + URL-synced tab shell.
+ *
+ * Responsibilities:
+ *  1. Verify Supabase is configured.
+ *  2. Check session + role (admin only).
+ *  3. Sync the active tab with the `?tab=` URL search param so:
+ *     - Refresh stays on the same tab.
+ *     - Browser back/forward navigates between tabs.
+ *     - Deep links like /admin.html?tab=bopis work.
+ *  4. Render the correct section component.
+ *
+ * All data fetching, mutations, and local state live inside the section
+ * components (InventorySection, OrdersSection, BopisSection, DokuSection,
+ * DashboardSection). This file stays intentionally thin.
+ */
+
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Session } from '@supabase/supabase-js';
-import {
-  AdminDetailTop,
-  AdminProductListPane,
-  AdminRail,
-  AdminSidebar,
-  DokuCheckoutCard,
-  InventoryDetailCard,
-  OrdersCard,
-  PickupVerificationCard,
-  ProductFormCard,
-  DashboardView,
-} from '../components/admin';
+import { AdminRail, AdminSidebar } from '../components/admin';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { getCurrentUserRole } from '../services/auth';
-import {
-  createDokuCheckout,
-  createProduct,
-  listAdminOrders,
-  listAdminProducts,
-  updateProductStatus,
-  updateVariantStock,
-  verifyPickupCode,
-} from '../services/commerce';
-import { ProductFormInput } from '../types/commerce';
+import { useSearchParamState } from '../hooks/useSearchParamState';
+import { ADMIN_VIEWS, type AdminView } from './admin/types';
 
-const currency = new Intl.NumberFormat('id-ID', {
-  style: 'currency',
-  currency: 'IDR',
-  maximumFractionDigits: 0,
-});
+// Section components are lazy-loaded so each section's bundle is only
+// downloaded when the admin first navigates to that tab.
+const InventorySection = lazy(() =>
+  import('./admin/InventorySection').then((m) => ({ default: m.InventorySection })),
+);
+const OrdersSection = lazy(() =>
+  import('./admin/OrdersSection').then((m) => ({ default: m.OrdersSection })),
+);
+const BopisSection = lazy(() =>
+  import('./admin/BopisSection').then((m) => ({ default: m.BopisSection })),
+);
+const DokuSection = lazy(() =>
+  import('./admin/DokuSection').then((m) => ({ default: m.DokuSection })),
+);
+const DashboardSection = lazy(() =>
+  import('./admin/DashboardSection').then((m) => ({ default: m.DashboardSection })),
+);
 
-const initialProductForm: ProductFormInput = {
-  name: '',
-  slug: '',
-  sku: '',
-  description: '',
-  category: 'CLOTHING',
-  status: 'active',
-  priceIdr: 199000,
-  stockQuantity: 10,
-  imageUrl: '',
-};
+function SectionFallback() {
+  return (
+    <section className="admin-detail-pane">
+      <div className="admin-panel" style={{ padding: '48px 32px' }}>
+        <p className="admin-eyebrow">Loading…</p>
+      </div>
+    </section>
+  );
+}
 
 export function AdminPage() {
-  const queryClient = useQueryClient();
   const [session, setSession] = useState<Session | null>(null);
   const [role, setRole] = useState<'admin' | 'customer' | null>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
-  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
-  const [productForm, setProductForm] = useState<ProductFormInput>(initialProductForm);
-  const [pickupCode, setPickupCode] = useState('');
-  const [currentView, setCurrentView] = useState<'dashboard' | 'inventory' | 'orders' | 'bopis' | 'doku'>('inventory');
-  const [checkoutCustomer, setCheckoutCustomer] = useState({
-    name: 'Spark Demo Customer',
-    email: 'demo@sparkstage.local',
-    phone: '6281234567890',
-  });
-  const [checkoutResult, setCheckoutResult] = useState<{ invoice_number: string; payment_url: string } | null>(null);
+
+  const [tab, setTab] = useSearchParamState<AdminView>('tab', 'inventory', ADMIN_VIEWS);
+
+  // ── Auth ──────────────────────────────────────────────────────────────────
 
   useEffect(() => {
     if (!supabase) return undefined;
@@ -111,12 +110,7 @@ export function AdminPage() {
   }, []);
 
   useEffect(() => {
-    if (!isSupabaseConfigured) return;
-
-    if (!session || role) {
-      return;
-    }
-
+    if (!isSupabaseConfigured || !session || role) return;
     setIsCheckingAuth(true);
     getCurrentUserRole()
       .then((nextRole) => setRole(nextRole))
@@ -126,112 +120,17 @@ export function AdminPage() {
 
   useEffect(() => {
     if (!isSupabaseConfigured || isCheckingAuth) return;
-
     if (!session) {
       window.location.href = `/login.html?redirect=${encodeURIComponent('/admin.html')}`;
       return;
     }
-
     if (role && role !== 'admin') {
       setRole(null);
       window.location.href = '/login.html';
     }
   }, [isCheckingAuth, role, session]);
 
-  const productsQuery = useQuery({
-    queryKey: ['admin-products'],
-    queryFn: listAdminProducts,
-    enabled: Boolean(session && role === 'admin'),
-  });
-
-  const ordersQuery = useQuery({
-    queryKey: ['admin-orders'],
-    queryFn: listAdminOrders,
-    enabled: Boolean(session && role === 'admin'),
-  });
-
-  const primaryProduct = useMemo(() => productsQuery.data?.find((product) => product.status === 'active'), [productsQuery.data]);
-  const primaryVariant = primaryProduct?.product_variants?.[0];
-  const selectedProduct = useMemo(
-    () => productsQuery.data?.find((product) => product.id === selectedProductId) ?? productsQuery.data?.[0],
-    [productsQuery.data, selectedProductId],
-  );
-  const selectedOrder = useMemo(
-    () => ordersQuery.data?.find((order) => order.id === selectedOrderId) ?? ordersQuery.data?.[0],
-    [ordersQuery.data, selectedOrderId],
-  );
-  const totalStock = useMemo(
-    () => productsQuery.data?.reduce((sum, product) => sum + (product.product_variants?.[0]?.stock_quantity ?? 0), 0) ?? 0,
-    [productsQuery.data],
-  );
-  const pendingPickupCount = useMemo(
-    () => ordersQuery.data?.filter((order) => order.status === 'pending_pickup').length ?? 0,
-    [ordersQuery.data],
-  );
-
-  const createProductMutation = useMutation({
-    mutationFn: createProduct,
-    onSuccess: () => {
-      setProductForm(initialProductForm);
-      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
-    },
-  });
-
-  const statusMutation = useMutation({
-    mutationFn: ({ productId, status }: { productId: string; status: 'draft' | 'active' | 'archived' }) =>
-      updateProductStatus(productId, status),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-products'] }),
-  });
-
-  const stockMutation = useMutation({
-    mutationFn: ({ variantId, stockQuantity }: { variantId: string; stockQuantity: number }) =>
-      updateVariantStock(variantId, stockQuantity),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-products'] }),
-  });
-
-  const pickupMutation = useMutation({
-    mutationFn: verifyPickupCode,
-    onSuccess: () => {
-      setPickupCode('');
-      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
-    },
-  });
-
-  const checkoutMutation = useMutation({
-    mutationFn: createDokuCheckout,
-    onSuccess: (result) => {
-      setCheckoutResult(result);
-      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
-    },
-  });
-
-  const signOut = async () => {
-    await supabase?.auth.signOut();
-    window.location.href = '/login.html';
-  };
-
-  const submitProduct = (event: FormEvent) => {
-    event.preventDefault();
-    createProductMutation.mutate(productForm);
-  };
-
-  const submitPickup = (event: FormEvent) => {
-    event.preventDefault();
-    pickupMutation.mutate(pickupCode);
-  };
-
-  const runCheckoutDemo = () => {
-    if (!primaryProduct) return;
-
-    checkoutMutation.mutate({
-      customer: checkoutCustomer,
-      items: [{
-        product_id: primaryProduct.id,
-        variant_id: primaryVariant?.id,
-        quantity: 1,
-      }],
-    });
-  };
+  // ── Early returns ─────────────────────────────────────────────────────────
 
   if (!isSupabaseConfigured) {
     return (
@@ -239,7 +138,11 @@ export function AdminPage() {
         <section className="admin-panel">
           <p className="admin-eyebrow">CMS Admin</p>
           <h1>Supabase env belum tersedia</h1>
-          <p>Isi `frontend/.env.local` dengan `VITE_SUPABASE_URL` dan `VITE_SUPABASE_ANON_KEY`, lalu restart dev server.</p>
+          <p>
+            Isi <code>frontend/.env.local</code> dengan{' '}
+            <code>VITE_SUPABASE_URL</code> dan <code>VITE_SUPABASE_ANON_KEY</code>,
+            lalu restart dev server.
+          </p>
         </section>
       </main>
     );
@@ -250,7 +153,7 @@ export function AdminPage() {
       <main className="admin-page">
         <section className="admin-panel">
           <p className="admin-eyebrow">Spark Stage CMS</p>
-          <h1>Checking session</h1>
+          <h1>Checking session…</h1>
         </section>
       </main>
     );
@@ -262,114 +165,64 @@ export function AdminPage() {
         <section className="admin-panel">
           <p className="admin-eyebrow">Spark Stage CMS</p>
           <h1>Access denied</h1>
-          <p className="admin-muted">Akun ini bukan admin. Silakan login dengan akun admin untuk membuka CMS.</p>
-          <button type="button" onClick={signOut}>Use another account</button>
+          <p className="admin-muted">
+            Akun ini bukan admin. Silakan login dengan akun admin untuk membuka CMS.
+          </p>
+          <button
+            type="button"
+            onClick={async () => {
+              await supabase?.auth.signOut();
+              window.location.href = '/login.html';
+            }}
+          >
+            Use another account
+          </button>
         </section>
       </main>
     );
   }
 
+  // ── Shell ─────────────────────────────────────────────────────────────────
+
+  const isReady = Boolean(session && role === 'admin');
+
+  const handleAddProduct = () => {
+    setTab('inventory');
+    // Give React one tick to mount InventorySection before scrolling.
+    setTimeout(
+      () => document.getElementById('admin-add-product')?.scrollIntoView({ behavior: 'smooth' }),
+      100,
+    );
+  };
+
+  const signOut = async () => {
+    await supabase?.auth.signOut();
+    window.location.href = '/login.html';
+  };
+
   return (
     <main className="admin-app">
-      <div className={`admin-window ${currentView !== 'inventory' ? 'is-wide' : ''}`}>
-        <AdminRail currentView={currentView} onChangeView={setCurrentView} />
+      <div className={`admin-window ${tab !== 'inventory' ? 'is-wide' : ''}`}>
+        <AdminRail currentView={tab} onChangeView={setTab} />
 
         <AdminSidebar
           email={session.user.email}
-          totalStock={totalStock}
-          currentView={currentView}
-          onChangeView={setCurrentView}
-          onAddProduct={() => {
-            setCurrentView('inventory');
-            setTimeout(() => document.getElementById('admin-add-product')?.scrollIntoView({ behavior: 'smooth' }), 100);
-          }}
+          totalStock={0}
+          currentView={tab}
+          onChangeView={setTab}
+          onAddProduct={handleAddProduct}
           onSignOut={signOut}
         />
 
-        {currentView === 'inventory' && (
-          <AdminProductListPane
-            products={productsQuery.data}
-            selectedProductId={selectedProduct?.id}
-            activeCount={productsQuery.data?.filter((product) => product.status === 'active').length ?? 0}
-            pendingPickupCount={pendingPickupCount}
-            isLoading={productsQuery.isLoading}
-            onRefresh={() => productsQuery.refetch()}
-            onSelectProduct={setSelectedProductId}
-            onAddProduct={() => document.getElementById('admin-add-product')?.scrollIntoView({ behavior: 'smooth' })}
-            formatCurrency={(value) => currency.format(value)}
-          />
-        )}
-
-        <section className="admin-detail-pane">
-          <AdminDetailTop />
-
-          {currentView === 'dashboard' && (
-            <DashboardView
-              totalProducts={productsQuery.data?.length ?? 0}
-              activeProducts={productsQuery.data?.filter((product) => product.status === 'active').length ?? 0}
-              totalOrders={ordersQuery.data?.length ?? 0}
-              pendingPickupCount={pendingPickupCount}
-              isLoading={productsQuery.isLoading || ordersQuery.isLoading}
-              onNavigate={setCurrentView}
-            />
+        <Suspense fallback={<SectionFallback />}>
+          {tab === 'dashboard' && (
+            <DashboardSection isReady={isReady} onNavigate={setTab} />
           )}
-
-          {currentView === 'inventory' && (
-            <>
-              <InventoryDetailCard
-                product={selectedProduct}
-                onStockChange={(variantId, stockQuantity) => stockMutation.mutate({ variantId, stockQuantity })}
-                onStatusChange={(productId, status) => statusMutation.mutate({ productId, status })}
-                onBack={() => setSelectedProductId(null)}
-                formatCurrency={(value) => currency.format(value)}
-              />
-
-              <section className="admin-content-grid" id="admin-add-product">
-                <ProductFormCard
-                  form={productForm}
-                  error={createProductMutation.error}
-                  isPending={createProductMutation.isPending}
-                  onChange={setProductForm}
-                  onSubmit={submitProduct}
-                />
-              </section>
-            </>
-          )}
-
-          {currentView === 'orders' && (
-            <OrdersCard
-              orders={ordersQuery.data}
-              selectedOrder={selectedOrder}
-              isLoading={ordersQuery.isLoading}
-              onSelectOrder={setSelectedOrderId}
-              onRefresh={() => ordersQuery.refetch()}
-              formatCurrency={(value) => currency.format(value)}
-            />
-          )}
-
-          {currentView === 'bopis' && (
-            <PickupVerificationCard
-              pickupCode={pickupCode}
-              error={pickupMutation.error}
-              isPending={pickupMutation.isPending}
-              isVerified={Boolean(pickupMutation.data)}
-              onPickupCodeChange={setPickupCode}
-              onSubmit={submitPickup}
-            />
-          )}
-
-          {currentView === 'doku' && (
-            <DokuCheckoutCard
-              customer={checkoutCustomer}
-              error={checkoutMutation.error}
-              isPending={checkoutMutation.isPending}
-              primaryProductName={primaryProduct?.name}
-              result={checkoutResult}
-              onCustomerChange={setCheckoutCustomer}
-              onCreateCheckout={runCheckoutDemo}
-            />
-          )}
-        </section>
+          {tab === 'inventory' && <InventorySection isReady={isReady} />}
+          {tab === 'orders' && <OrdersSection isReady={isReady} />}
+          {tab === 'bopis' && <BopisSection />}
+          {tab === 'doku' && <DokuSection isReady={isReady} />}
+        </Suspense>
       </div>
     </main>
   );

@@ -6,8 +6,7 @@ import {
   ShoppingBag03Icon,
 } from '@hugeicons/core-free-icons';
 import { AdminIcon } from './AdminIcon';
-
-type AdminView = 'dashboard' | 'inventory' | 'orders' | 'bopis' | 'doku';
+import type { AdminView } from '../../pages/admin/types';
 
 export function AdminRail({ currentView, onChangeView }: { currentView: AdminView; onChangeView: (view: AdminView) => void }) {
   return (

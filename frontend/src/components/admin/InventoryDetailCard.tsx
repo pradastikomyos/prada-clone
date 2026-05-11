@@ -71,7 +71,7 @@ export function InventoryDetailCard({
           </label>
           <label>
             Status
-            <Select value={product.status} onValueChange={(value) => onStatusChange(product.id, value as ProductStatus)}>
+            <Select value={product.status} onValueChange={(value: string) => onStatusChange(product.id, value as ProductStatus)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select a status" />
               </SelectTrigger>
