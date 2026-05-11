@@ -1,0 +1,43 @@
+{
+  "name": "prada-clone",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:update": "playwright test --update-snapshots"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.0",
+    "@types/react": "^18.3.28",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^6.0.1",
+    "tailwindcss": "^4.3.0",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.10"
+  },
+  "dependencies": {
+    "@fontsource/inter": "^5.2.8",
+    "@hugeicons/core-free-icons": "^4.1.2",
+    "@hugeicons/react": "^1.1.6",
+    "@phosphor-icons/react": "^2.1.10",
+    "@supabase/supabase-js": "^2.105.4",
+    "@tanstack/react-query": "^5.100.9",
+    "@types/qrcode": "^1.5.6",
+    "clsx": "^2.1.1",
+    "gsap": "^3.15.0",
+    "motion": "^12.38.0",
+    "playwright": "^1.59.1",
+    "qrcode": "^1.5.4",
+    "radix-ui": "^1.4.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwind-merge": "^3.5.0",
+    "zustand": "^5.0.13"
+  }
+}

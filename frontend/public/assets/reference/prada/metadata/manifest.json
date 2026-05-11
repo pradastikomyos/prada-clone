@@ -1,0 +1,49 @@
+{
+  "generatedAt": "2026-05-10T19:30:00.000Z",
+  "source": "Prada.com + Zara.com reference assets harvested for private learning prototype",
+  "note": "Run `node scripts/download-reference-assets.mjs` to re-harvest. Extensions reflect actual Content-Type (Prada CDN serves AVIF, some videos arrive as WebM).",
+  "buckets": {
+    "site-assets": {
+      "home.hero.days-of-summer.video": "/assets/reference/prada/home/hero/days-of-summer-loop.mp4",
+      "home.new-arrivals.women.hero.video": "/assets/reference/prada/women-new-arrivals/hero/new-arrivals-loop.webm",
+      "home.new-arrivals.men.hero.video": "/assets/reference/prada/men-new-arrivals/hero/new-arrivals-loop.webm",
+      "home.men-new-arrivals.legacy.hero.video": "/assets/reference/prada/men-new-arrivals/hero/loop-prada-soft-bags-men-new-in.mp4",
+      "home.men-new-arrivals.legacy.hero.poster": "/assets/reference/prada/men-new-arrivals/hero/hero-prada-man-new-in.jpg",
+      "home.spring-summer.women.mosaic": "/assets/reference/prada/home/mosaic/spring-summer-women-landscape.avif",
+      "home.spring-summer.men.mosaic": "/assets/reference/prada/home/mosaic/spring-summer-men-landscape.avif",
+      "login.editorial": "/assets/reference/zara/login/editorial.jpg"
+    },
+    "product-images": {
+      "women.new-arrivals.ribbed-cotton-top": "/assets/reference/prada/women-new-arrivals/products/ribbed-cotton-top.avif",
+      "women.new-arrivals.embroidered-linen-skirt": "/assets/reference/prada/women-new-arrivals/products/embroidered-linen-skirt.avif",
+      "women.new-arrivals.antiqued-leather-sandals": "/assets/reference/prada/women-new-arrivals/products/antiqued-leather-sandals.avif",
+      "women.new-arrivals.prada-fold-large-leather-shoulder-bag": "/assets/reference/prada/women-new-arrivals/products/prada-fold-large-leather-shoulder-bag.avif",
+      "women.new-arrivals.striped-pique-polo-shirt": "/assets/reference/prada/women-new-arrivals/products/striped-pique-polo-shirt.avif",
+      "women.new-arrivals.prada-bonnie-small-printed-linen-leather-handbag": "/assets/reference/prada/women-new-arrivals/products/prada-bonnie-small-printed-linen-leather-handbag.avif",
+      "women.new-arrivals.shuffle-antiqued-leather-boat-shoes": "/assets/reference/prada/women-new-arrivals/products/shuffle-antiqued-leather-boat-shoes.avif",
+      "women.new-arrivals.suede-jacket": "/assets/reference/prada/women-new-arrivals/products/suede-jacket.avif",
+      "women.new-arrivals.old-denim-blouson-jacket": "/assets/reference/prada/women-new-arrivals/products/old-denim-blouson-jacket.avif",
+      "women.dresses.embroidered-linen-mini-dress": "/assets/reference/prada/women-categories/dresses/embroidered-linen-mini-dress.avif",
+      "women.dresses.embroidered-linen-dress": "/assets/reference/prada/women-categories/dresses/embroidered-linen-dress.avif",
+      "women.dresses.embroidered-canvas-mini-dress": "/assets/reference/prada/women-categories/dresses/embroidered-canvas-mini-dress.avif",
+      "women.tops.embroidered-linen-top": "/assets/reference/prada/women-categories/tops/embroidered-linen-top.avif",
+      "women.tops.linen-top-floral-motif": "/assets/reference/prada/women-categories/tops/linen-top-floral-motif.avif",
+      "women.tops.sleeveless-polka-dot-silk-shirt": "/assets/reference/prada/women-categories/tops/sleeveless-polka-dot-silk-shirt.avif",
+      "women.outerwear.embroidered-gabardine-blouson": "/assets/reference/prada/women-categories/outerwear/embroidered-gabardine-blouson.avif",
+      "women.outerwear.washed-re-nylon-jacket": "/assets/reference/prada/women-categories/outerwear/washed-re-nylon-jacket.avif",
+      "women.outerwear.silk-faille-blouson-jacket": "/assets/reference/prada/women-categories/outerwear/silk-faille-blouson-jacket.avif",
+      "women.trousers.floral-print-linen-skirt": "/assets/reference/prada/women-categories/trousers/floral-print-linen-skirt.avif",
+      "women.trousers.pleated-silk-faille-skirt": "/assets/reference/prada/women-categories/trousers/pleated-silk-faille-skirt.avif",
+      "women.trousers.poplin-shorts": "/assets/reference/prada/women-categories/trousers/poplin-shorts.avif",
+      "men.new-arrivals.prada-route-canvas-leather-tote-bag": "/assets/reference/prada/men-new-arrivals/products/prada-route-canvas-leather-tote-bag.jpg",
+      "men.new-arrivals.suede-bomber-jacket": "/assets/reference/prada/men-new-arrivals/products/suede-bomber-jacket.jpg",
+      "men.new-arrivals.sunglasses-iconic-metal-plaque": "/assets/reference/prada/men-new-arrivals/products/sunglasses-iconic-metal-plaque.jpg",
+      "men.new-arrivals.leather-mules": "/assets/reference/prada/men-new-arrivals/products/leather-mules.jpg",
+      "men.new-arrivals.prada-explore-leather-shoulder-bag": "/assets/reference/prada/men-new-arrivals/products/prada-explore-leather-shoulder-bag.jpg",
+      "men.new-arrivals.suede-band-sandals": "/assets/reference/prada/men-new-arrivals/products/suede-band-sandals.jpg",
+      "men.new-arrivals.striped-cotton-pique-polo-shirt": "/assets/reference/prada/men-new-arrivals/products/striped-cotton-pique-polo-shirt.jpg",
+      "men.new-arrivals.old-denim-five-pocket-jeans": "/assets/reference/prada/men-new-arrivals/products/old-denim-five-pocket-jeans.jpg",
+      "men.new-arrivals.bull-denim-zipper-shirt": "/assets/reference/prada/men-new-arrivals/products/bull-denim-zipper-shirt.jpg"
+    }
+  }
+}

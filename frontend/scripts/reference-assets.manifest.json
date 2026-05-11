@@ -1,0 +1,172 @@
+{
+  "generatedAt": null,
+  "note": "Manifest of reference assets to harvest from prada.com + zara CDN. Paths are relative to frontend/public. Existing men-new-arrivals assets (already local) are listed for inventory but skipped when their target file exists.",
+  "baseReferer": "https://www.prada.com/ww/en.html",
+  "assets": [
+    {
+      "bucket": "site-assets",
+      "key": "home.hero.days-of-summer.video",
+      "url": "https://www.prada.com/content/dam/pradaspa/home_page/2026/04/may_issue/days_of_summer/w/loop_DT_1.mp4",
+      "target": "assets/reference/prada/home/hero/days-of-summer-loop.mp4"
+    },
+    {
+      "bucket": "site-assets",
+      "key": "home.new-arrivals.women.hero.video",
+      "url": "https://www.prada.com/content/dam/pradaspa/ecommerce/2026/01/SS26/woman/new_in/banner_01/loop_DT.mp4",
+      "target": "assets/reference/prada/women-new-arrivals/hero/new-arrivals-loop.webm"
+    },
+    {
+      "bucket": "site-assets",
+      "key": "home.new-arrivals.men.hero.video",
+      "url": "https://www.prada.com/content/dam/pradaspa/ecommerce/2026/01/SS26/man/new_in/banner_01/loop_DT.mp4",
+      "target": "assets/reference/prada/men-new-arrivals/hero/new-arrivals-loop.webm"
+    },
+    {
+      "bucket": "site-assets",
+      "key": "home.spring-summer.women.mosaic",
+      "url": "https://www.prada.com/content/dam/pradaspa/ecommerce/2026/04/may_issue/snodi/womens/days_of_summer/Mosaic_landscape_DT.jpg",
+      "target": "assets/reference/prada/home/mosaic/spring-summer-women-landscape.avif"
+    },
+    {
+      "bucket": "site-assets",
+      "key": "home.spring-summer.men.mosaic",
+      "url": "https://www.prada.com/content/dam/pradaspa/ecommerce/2026/04/may_issue/snodi/mens/days_of_summer/Mosaic_landscape_DT.jpg",
+      "target": "assets/reference/prada/home/mosaic/spring-summer-men-landscape.avif"
+    },
+    {
+      "bucket": "site-assets",
+      "key": "login.editorial",
+      "url": "https://static.zara.net/assets/public/db63/8153/fcbe46c2bb3a/72c4b7e0296d/image-ipadh-da33382e-829c-41f6-99e2-31c7ccb4e654-default_0/image-ipadh-da33382e-829c-41f6-99e2-31c7ccb4e654-default_0.jpg?ts=1773750397709&w=2000",
+      "target": "assets/reference/zara/login/editorial.jpg",
+      "referer": "https://www.zara.com/"
+    },
+
+    {
+      "bucket": "product-images",
+      "key": "women.dresses.embroidered-linen-mini-dress",
+      "url": "https://www.prada.com/content/dam/pradabkg_products/P/P3S/P3S37/1920F0041/P3S37_1920_F0041_S_OOO_MDF.jpg/_jcr_content/renditions/cq5dam.web.hebebed.1200.1200.jpg",
+      "target": "assets/reference/prada/women-categories/dresses/embroidered-linen-mini-dress.avif"
+    },
+    {
+      "bucket": "product-images",
+      "key": "women.dresses.embroidered-linen-dress",
+      "url": "https://www.prada.com/content/dam/pradabkg_products/P/P3S/P3S37R/192TF0009/P3S37R_192T_F0009_S_OOO_MDF.jpg/_jcr_content/renditions/cq5dam.web.hebebed.1200.1200.jpg",
+      "target": "assets/reference/prada/women-categories/dresses/embroidered-linen-dress.avif"
+    },
+    {
+      "bucket": "product-images",
+      "key": "women.dresses.embroidered-canvas-mini-dress",
+      "url": "https://www.prada.com/content/dam/pradabkg_products/P/P3S/P3S60R/122GF0009/P3S60R_122G_F0009_S_OOO_MDF.jpg/_jcr_content/renditions/cq5dam.web.hebebed.1200.1200.jpg",
+      "target": "assets/reference/prada/women-categories/dresses/embroidered-canvas-mini-dress.avif"
+    },
+    {
+      "bucket": "product-images",
+      "key": "women.tops.embroidered-linen-top",
+      "url": "https://www.prada.com/content/dam/pradabkg_products/P/P91/P913OR/122GF0009/P913OR_122G_F0009_S_OOO_MDF.jpg/_jcr_content/renditions/cq5dam.web.hebebed.1200.1200.jpg",
+      "target": "assets/reference/prada/women-categories/tops/embroidered-linen-top.avif"
+    },
+    {
+      "bucket": "product-images",
+      "key": "women.tops.linen-top-floral-motif",
+      "url": "https://www.prada.com/content/dam/pradabkg_products/P/P92/P926N/1920F0041/P926N_1920_F0041_S_OOO_MDF.jpg/_jcr_content/renditions/cq5dam.web.hebebed.1200.1200.jpg",
+      "target": "assets/reference/prada/women-categories/tops/linen-top-floral-motif.avif"
+    },
+    {
+      "bucket": "product-images",
+      "key": "women.tops.sleeveless-polka-dot-silk-shirt",
+      "url": "https://www.prada.com/content/dam/pradabkg_products/P/P49/P499HX/19ZNF022X/P499HX_19ZN_F022X_S_OOO_MDF.jpg/_jcr_content/renditions/cq5dam.web.hebebed.1200.1200.jpg",
+      "target": "assets/reference/prada/women-categories/tops/sleeveless-polka-dot-silk-shirt.avif"
+    },
+    {
+      "bucket": "product-images",
+      "key": "women.outerwear.embroidered-gabardine-blouson",
+      "url": "https://www.prada.com/content/dam/pradabkg_products/P/P80/P8059E/192AF0036/P8059E_192A_F0036_S_OOO_MDF.jpg/_jcr_content/renditions/cq5dam.web.hebebed.1200.1200.jpg",
+      "target": "assets/reference/prada/women-categories/outerwear/embroidered-gabardine-blouson.avif"
+    },
+    {
+      "bucket": "product-images",
+      "key": "women.outerwear.washed-re-nylon-jacket",
+      "url": "https://www.prada.com/content/dam/pradabkg_products/2/29S/29S362/19YEF0040/29S362_19YE_F0040_S_OOO_MDF.jpg/_jcr_content/renditions/cq5dam.web.hebebed.1200.1200.jpg",
+      "target": "assets/reference/prada/women-categories/outerwear/washed-re-nylon-jacket.avif"
+    },
+    {
+      "bucket": "product-images",
+      "key": "women.outerwear.silk-faille-blouson-jacket",
+      "url": "https://www.prada.com/content/dam/pradabkg_products/P/P80/P8050/1526F0009/P8050_1526_F0009_S_OOO_MDF.jpg/_jcr_content/renditions/cq5dam.web.hebebed.1200.1200.jpg",
+      "target": "assets/reference/prada/women-categories/outerwear/silk-faille-blouson-jacket.avif"
+    },
+    {
+      "bucket": "product-images",
+      "key": "women.trousers.floral-print-linen-skirt",
+      "url": "https://www.prada.com/content/dam/pradabkg_products/P/P17/P178I/1920F0041/P178I_1920_F0041_S_OOO_MDF.jpg/_jcr_content/renditions/cq5dam.web.hebebed.1200.1200.jpg",
+      "target": "assets/reference/prada/women-categories/trousers/floral-print-linen-skirt.avif"
+    },
+    {
+      "bucket": "product-images",
+      "key": "women.trousers.pleated-silk-faille-skirt",
+      "url": "https://www.prada.com/content/dam/pradabkg_products/P/P19/P191I/1526F0009/P191I_1526_F0009_S_OOO_MDF.jpg/_jcr_content/renditions/cq5dam.web.hebebed.1200.1200.jpg",
+      "target": "assets/reference/prada/women-categories/trousers/pleated-silk-faille-skirt.avif"
+    },
+    {
+      "bucket": "product-images",
+      "key": "women.trousers.poplin-shorts",
+      "url": "https://www.prada.com/content/dam/pradabkg_products/P/P20/P202KC/19TOF0161/P202KC_19TO_F0161_S_OOO_MDF.jpg/_jcr_content/renditions/cq5dam.web.hebebed.1200.1200.jpg",
+      "target": "assets/reference/prada/women-categories/trousers/poplin-shorts.avif"
+    },
+
+    {
+      "bucket": "product-images",
+      "key": "women.new-arrivals.ribbed-cotton-top",
+      "url": "https://www.prada.com/content/dam/pradabkg_products/P/P29/P29B82/17LAF0009/P29B82_17LA_F0009_S_OOO_MDF.jpg/_jcr_content/renditions/cq5dam.web.hebebed.1200.1200.jpg",
+      "target": "assets/reference/prada/women-new-arrivals/products/ribbed-cotton-top.avif"
+    },
+    {
+      "bucket": "product-images",
+      "key": "women.new-arrivals.embroidered-linen-skirt",
+      "url": "https://www.prada.com/content/dam/pradabkg_products/P/P18/P181IR/192TF0009/P181IR_192T_F0009_S_OOO_MDF.jpg/_jcr_content/renditions/cq5dam.web.hebebed.1200.1200.jpg",
+      "target": "assets/reference/prada/women-new-arrivals/products/embroidered-linen-skirt.avif"
+    },
+    {
+      "bucket": "product-images",
+      "key": "women.new-arrivals.antiqued-leather-sandals",
+      "url": "https://www.prada.com/content/dam/pradabkg_products/1/1X5/1X511O/V69F0K74/1X511O_V69_F0K74_F_010_SLR.jpg/_jcr_content/renditions/cq5dam.web.hebebed.1200.1200.jpg",
+      "target": "assets/reference/prada/women-new-arrivals/products/antiqued-leather-sandals.avif"
+    },
+    {
+      "bucket": "product-images",
+      "key": "women.new-arrivals.prada-fold-large-leather-shoulder-bag",
+      "url": "https://www.prada.com/content/dam/pradabkg_products/1/1BC/1BC288/2CYSF0PG7/1BC288_2CYS_F0PG7_V_OOO_MDL.jpg/_jcr_content/renditions/cq5dam.web.hebebed.1200.1200.jpg",
+      "target": "assets/reference/prada/women-new-arrivals/products/prada-fold-large-leather-shoulder-bag.avif"
+    },
+    {
+      "bucket": "product-images",
+      "key": "women.new-arrivals.striped-pique-polo-shirt",
+      "url": "https://www.prada.com/content/dam/pradabkg_products/3/396/39668R/19SJF05HE/39668R_19SJ_F05HE_S_OOO_MDF.jpg/_jcr_content/renditions/cq5dam.web.hebebed.1200.1200.jpg",
+      "target": "assets/reference/prada/women-new-arrivals/products/striped-pique-polo-shirt.avif"
+    },
+    {
+      "bucket": "product-images",
+      "key": "women.new-arrivals.prada-bonnie-small-printed-linen-leather-handbag",
+      "url": "https://www.prada.com/content/dam/pradabkg_products/1/1BA/1BA486/2FPTF0009/1BA486_2FPT_F0009_V_OFO_MDL.jpg/_jcr_content/renditions/cq5dam.web.hebebed.1200.1200.jpg",
+      "target": "assets/reference/prada/women-new-arrivals/products/prada-bonnie-small-printed-linen-leather-handbag.avif"
+    },
+    {
+      "bucket": "product-images",
+      "key": "women.new-arrivals.shuffle-antiqued-leather-boat-shoes",
+      "url": "https://www.prada.com/content/dam/pradabkg_products/1/1E4/1E434O/070F0002/1E434O_070_F0002_F_005_SLR.jpg/_jcr_content/renditions/cq5dam.web.hebebed.1200.1200.jpg",
+      "target": "assets/reference/prada/women-new-arrivals/products/shuffle-antiqued-leather-boat-shoes.avif"
+    },
+    {
+      "bucket": "product-images",
+      "key": "women.new-arrivals.suede-jacket",
+      "url": "https://www.prada.com/content/dam/pradabkg_products/5/56A/56A226/173BF0324/56A226_173B_F0324_S_OOO_MDF.jpg/_jcr_content/renditions/cq5dam.web.hebebed.1200.1200.jpg",
+      "target": "assets/reference/prada/women-new-arrivals/products/suede-jacket.avif"
+    },
+    {
+      "bucket": "product-images",
+      "key": "women.new-arrivals.old-denim-blouson-jacket",
+      "url": "https://www.prada.com/content/dam/pradabkg_products/G/GFB/GFB347/1954F01CD/GFB347_1954_F01CD_S_OOO_MDF.jpg/_jcr_content/renditions/cq5dam.web.hebebed.1200.1200.jpg",
+      "target": "assets/reference/prada/women-new-arrivals/products/old-denim-blouson-jacket.avif"
+    }
+  ]
+}

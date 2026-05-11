@@ -1,0 +1,420 @@
+@font-face {
+  font-family: 'GT-America Standard';
+  src: url('../fonts/GT-America/GT-America-Standard-Regular-Trial.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'GT-America Standard';
+  src: url('../fonts/GT-America/GT-America-Standard-Medium-Trial.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'GT-America Standard', 'Helvetica Neue', Arial, sans-serif;
+  background: #fff;
+  color: #000;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Removed global focus outline for aesthetics */
+:focus-visible {
+  outline: none !important;
+}
+
+:focus {
+  outline: none !important;
+}
+
+.brand-logo {
+  position: relative;
+  display: block;
+  width: 170px;
+  height: 80px;
+  overflow: hidden;
+}
+
+.brand-logo-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+}
+
+.brand-logo-image--dark {
+  display: block;
+}
+
+.brand-logo-image--light {
+  display: none;
+}
+
+/* ============================================
+   LAYOUT: Zara-style split screen
+   ============================================ */
+.login-page {
+  display: flex;
+  min-height: 100vh;
+}
+
+.login-left {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  padding: 40px 60px;
+}
+
+.login-right {
+  width: 50%;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-right img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ============================================
+   LOGO
+   ============================================ */
+.login-logo {
+  flex-shrink: 0;
+}
+
+.login-logo .brand-logo {
+  width: 170px;
+  height: 80px;
+}
+
+/* ============================================
+   FORM AREA
+   ============================================ */
+.login-form-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 420px;
+  padding: 60px 0;
+}
+
+.login-heading {
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  margin-bottom: 40px;
+}
+
+/* ============================================
+   FORM FIELDS
+   ============================================ */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+.field label {
+  font-size: 10px;
+  font-weight: 400;
+  color: #999;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.field input {
+  border: none;
+  border-bottom: 1px solid #000;
+  padding: 10px 0;
+  font-family: inherit;
+  font-size: 14px;
+  color: #000;
+  background: transparent;
+  outline: none !important;
+  border-radius: 0;
+  -webkit-appearance: none;
+  transition: border-color 0.2s ease;
+}
+
+.field input:focus {
+  border-bottom-color: #000;
+  border-bottom-width: 2px;
+}
+
+.field input::placeholder {
+  color: #bbb;
+}
+
+/* ============================================
+   CONTINUE BUTTON
+   ============================================ */
+.btn-continue {
+  width: 100%;
+  padding: 16px;
+  background: transparent;
+  color: #000;
+  border: 1px solid #000;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+.btn-continue:hover {
+  background: #000;
+  color: #fff;
+}
+
+.btn-continue:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.login-message {
+  margin-top: -8px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.login-message-error {
+  color: #b00020;
+}
+
+.login-message-success {
+  color: #116329;
+}
+
+/* ============================================
+   PASSWORD FIELD + EYE TOGGLE
+   ============================================ */
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-wrapper input {
+  flex: 1;
+  padding-right: 36px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 0;
+  bottom: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #999;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s ease;
+}
+
+.password-toggle:hover {
+  color: #000;
+}
+
+/* ============================================
+   TOGGLE TEXT (Sign up / Log in link)
+   ============================================ */
+.toggle-text {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+}
+
+
+.toggle-link,
+.inline-link {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.toggle-link:hover,
+.inline-link:hover {
+  opacity: 0.7;
+}
+
+.is-placeholder {
+  position: relative;
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.is-placeholder::after {
+  content: none;
+  margin-left: 8px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: currentColor;
+  opacity: 0.7;
+}
+
+/* ============================================
+   SLIDE ANIMATION
+   ============================================ */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   DIVIDER
+   ============================================ */
+.divider {
+  margin: 48px 0 20px;
+}
+
+.divider span {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 1px;
+}
+
+/* ============================================
+   SSO DISCLAIMER
+   ============================================ */
+.sso-disclaimer {
+  font-size: 11px;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.sso-disclaimer a {
+  text-decoration: underline;
+  color: #666;
+}
+
+.sso-disclaimer a:hover {
+  color: #000;
+}
+
+/* ============================================
+   SSO BUTTONS
+   ============================================ */
+.btn-sso {
+  width: 100%;
+  padding: 14px;
+  background: transparent;
+  color: #000;
+  border: 1px solid #ddd;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+  margin-bottom: 10px;
+}
+
+.btn-sso:hover {
+  border-color: #000;
+  background: #fafafa;
+}
+
+.btn-sso svg {
+  flex-shrink: 0;
+}
+
+/* ============================================
+   FOOTER HELP LINK
+   ============================================ */
+.login-help {
+  flex-shrink: 0;
+  padding-top: 40px;
+}
+
+.login-help a {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  color: #666;
+  transition: color 0.2s ease;
+}
+
+.login-help a:hover {
+  color: #000;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 1024px) {
+  .login-left {
+    width: 55%;
+    padding: 32px 40px;
+  }
+  .login-right {
+    width: 45%;
+  }
+}
+
+@media (max-width: 768px) {
+  .login-page {
+    flex-direction: column;
+  }
+  .login-left {
+    width: 100%;
+    padding: 24px 24px;
+    min-height: 100vh;
+  }
+  .login-right {
+    display: none;
+  }
+}
+
+/* Removed specific focus outline for form elements */
+.field input:focus-visible,
+.field input:focus,
+button:focus-visible,
+button:focus,
+a:focus-visible,
+a:focus {
+  outline: none !important;
+}

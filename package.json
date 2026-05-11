@@ -1,0 +1,20 @@
+{
+  "name": "spark-stage-skripsi-monorepo",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "npm --workspace frontend run dev",
+    "build": "npm --workspace frontend run build",
+    "preview": "npm --workspace frontend run preview",
+    "typecheck": "npm --workspace frontend run typecheck",
+    "test:e2e": "npm --workspace frontend run test:e2e",
+    "test:e2e:headed": "npm --workspace frontend run test:e2e:headed",
+    "test:e2e:update": "npm --workspace frontend run test:e2e:update",
+    "supabase:projects": "supabase projects list",
+    "supabase:link": "supabase link",
+    "supabase:status": "supabase status"
+  }
+}

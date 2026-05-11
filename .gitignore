@@ -1,0 +1,60 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Dev server local logs
+frontend/vite-dev.err.log
+frontend/vite-dev.out.log
+
+# Dependencies
+node_modules
+dist
+dist-ssr
+
+# Local env overrides (secrets live here)
+*.local
+.env.local
+.env.*.local
+frontend/.env.local
+frontend/.env.*.local
+
+# Browser automation artifacts
+.playwright-mcp/
+test-results/
+playwright-report/
+
+# Raw harvested assets can be large and should stay local unless curated.
+public/assets/harvested/
+frontend/public/assets/harvested/
+
+# Generated reports from downloaders (regeneratable via script)
+frontend/scripts/reference-assets.downloaded.json
+
+# Supabase local CLI metadata
+supabase/.temp/
+
+# Agent tool artifacts
+.agent/
+.kiro/
+.claude/
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Misc root-level debug screenshots (not project assets)
+/local-*.png
+/menu-*.png
+/prada-menu-*.png
