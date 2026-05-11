@@ -11,7 +11,8 @@ import { SearchOverlay } from '../components/navigation/SearchOverlay';
 import { HeroMediaSkeleton, AdminTableSkeleton } from '../components/ui/Skeletons';
 import { UserHeaderActions } from '../components/ui/UserHeaderActions';
 import { CartHeaderButton } from '../components/ui/CartHeaderButton';
-import { homeSections } from '../data/heroSections';
+import { buildHomeSections } from '../data/heroSections';
+import { useSiteAssets } from '../hooks/useSiteAssets';
 import type { HeroSection } from '../types/catalog';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -123,6 +124,8 @@ export function HomePage() {
     setSearchOpen,
   } = useUIStore();
   const { skeletonMode } = useUIState();
+  const { assetMap } = useSiteAssets();
+  const homeSections = buildHomeSections(assetMap);
   
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 

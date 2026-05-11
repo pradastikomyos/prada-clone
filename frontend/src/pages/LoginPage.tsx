@@ -4,6 +4,7 @@ import { ViewIcon, ViewOffIcon } from '@hugeicons/core-free-icons';
 import { BrandLogo } from '../components/ui/BrandLogo';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { getUserRole, resolvePostLoginPath } from '../services/auth';
+import { useSiteAssets } from '../hooks/useSiteAssets';
 
 export function LoginPage() {
   const [mode, setMode] = useState<'login' | 'signup'>('login');
@@ -13,6 +14,8 @@ export function LoginPage() {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { assetMap } = useSiteAssets();
+  const editorialSrc = assetMap['login.editorial'];
   const isSignup = mode === 'signup';
   const requestedRedirect = useMemo(() => new URLSearchParams(window.location.search).get('redirect'), []);
 
@@ -124,7 +127,7 @@ export function LoginPage() {
         <footer className="login-help"><button type="button" className="inline-link is-placeholder" aria-disabled="true" data-ui="placeholder">HELP</button></footer>
       </div>
       <div className="login-right">
-        <img src="/assets/reference/zara/login/editorial.jpg" alt="Fashion Editorial" />
+        <img src={editorialSrc} alt="Fashion Editorial" />
       </div>
     </div>
   );
