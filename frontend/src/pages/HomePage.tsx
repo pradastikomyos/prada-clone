@@ -9,8 +9,9 @@ import { BrandLogo } from '../components/ui/BrandLogo';
 import { HomepageMenu } from '../components/navigation/HomepageMenu';
 import { SearchOverlay } from '../components/navigation/SearchOverlay';
 import { HeroMediaSkeleton, AdminTableSkeleton } from '../components/ui/Skeletons';
+import { UserHeaderActions } from '../components/ui/UserHeaderActions';
+import { CartHeaderButton } from '../components/ui/CartHeaderButton';
 import { homeSections } from '../data/heroSections';
-import { useCartSummary } from '../hooks/useCartSummary';
 import type { HeroSection } from '../types/catalog';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -106,10 +107,8 @@ export function HomePage() {
     scrolled, 
     setMenuOpen,
     setSearchOpen,
-    setCartDrawerOpen,
   } = useUIStore();
   const { skeletonMode } = useUIState();
-  const cartSummary = useCartSummary();
   
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -149,10 +148,8 @@ export function HomePage() {
           </a>
         </div>
         <div className="header-right">
-          <a href="login.html">Account</a>
-          <button type="button" className="header-link" onClick={() => setCartDrawerOpen(true)}>
-            Cart{cartSummary.itemCount > 0 ? <span className="cart-badge">({cartSummary.itemCount})</span> : null}
-          </button>
+          <UserHeaderActions />
+          <CartHeaderButton className="header-link" />
         </div>
       </header>
       <main className="main-content">

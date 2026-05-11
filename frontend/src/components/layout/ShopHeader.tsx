@@ -1,11 +1,8 @@
 import { BrandLogo } from '../ui/BrandLogo';
-import { useUIStore } from '../../store/uiStore';
-import { useCartSummary } from '../../hooks/useCartSummary';
+import { UserHeaderActions } from '../ui/UserHeaderActions';
+import { CartHeaderButton } from '../ui/CartHeaderButton';
 
 export function ShopHeader() {
-  const setCartDrawerOpen = useUIStore((state) => state.setCartDrawerOpen);
-  const { itemCount } = useCartSummary();
-
   return (
     <header className="shop-header">
       <div className="shop-header-left">
@@ -19,10 +16,8 @@ export function ShopHeader() {
         <a href="index.html" aria-label="Spark Stage home"><BrandLogo /></a>
       </div>
       <div className="shop-header-right">
-          <a href="login.html">Account</a>
-          <button type="button" className="shop-header-link" onClick={() => setCartDrawerOpen(true)}>
-            Cart{itemCount > 0 ? <span className="cart-badge">({itemCount})</span> : null}
-          </button>
+        <UserHeaderActions />
+        <CartHeaderButton className="shop-header-link" />
       </div>
     </header>
   );

@@ -114,6 +114,10 @@ a { text-decoration: none; color: inherit; }
 }
 .shop-header-right a:hover { opacity: 0.6; }
 
+/* User identity inherits shop-header font/color; signout icon matches link opacity */
+.shop-header-right .user-header-name { font-size: 12px; letter-spacing: 0.5px; }
+.shop-header-right .user-header-signout { color: #000; }
+
 .shop-header-link {
   font-size: 12px;
   letter-spacing: 0.5px;
