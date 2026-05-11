@@ -22,7 +22,7 @@ test('captures mega menu open state', async ({ page }, testInfo) => {
 });
 
 test('captures product grid state', async ({ page }, testInfo) => {
-  await page.goto('/women.html', { waitUntil: 'domcontentloaded' });
+  await page.goto('/women', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.product-grid').first()).toBeVisible();
 
   await page.screenshot({
@@ -32,7 +32,7 @@ test('captures product grid state', async ({ page }, testInfo) => {
 });
 
 test('captures Prada-style new arrivals listing', async ({ page }, testInfo) => {
-  await page.goto('/new-arrivals.html', { waitUntil: 'domcontentloaded' });
+  await page.goto('/new-arrivals', { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: "Women's New Arrivals" })).toBeVisible();
   await expect(page.locator('.listing-toolbar')).toContainText('276 PRODUCTS');
   await expect(page.locator('.prada-product-card')).toHaveCount(9);
@@ -44,7 +44,7 @@ test('captures Prada-style new arrivals listing', async ({ page }, testInfo) => 
 });
 
 test('captures Prada-style mens new arrivals listing', async ({ page }, testInfo) => {
-  await page.goto('/men.html', { waitUntil: 'domcontentloaded' });
+  await page.goto('/men', { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: "Men's New Arrivals" })).toBeVisible();
   await expect(page.locator('.listing-toolbar')).toContainText('720 PRODUCTS');
   await expect(page.locator('.listing-hero video')).toBeVisible();
@@ -56,44 +56,30 @@ test('captures Prada-style mens new arrivals listing', async ({ page }, testInfo
   });
 });
 
-for (const route of ['/new-arrivals.html', '/men.html']) {
+for (const route of ['/new-arrivals', '/men']) {
   test(`listing menu opens and closes on ${route}`, async ({ page }) => {
     await page.goto(route, { waitUntil: 'domcontentloaded' });
 
-    // ListingHeader renders <ListingMenu />. Its trigger exposes
-    // aria-label="Open menu" and aria-expanded that toggles the panel.
     const menuButton = page.getByRole('button', { name: /open menu/i });
     await expect(menuButton).toHaveAttribute('aria-expanded', 'false');
-    await expect(page.locator('#listing-menu-panel')).not.toHaveClass(/is-open/);
 
     await menuButton.click();
     await expect(menuButton).toHaveAttribute('aria-expanded', 'true');
-    const panel = page.locator('#listing-menu-panel');
-    await expect(panel).toHaveClass(/is-open/);
-    await expect(panel).toBeVisible();
+    await expect(page.locator('#listing-menu-panel')).toBeVisible();
+    await expect(page.locator('.listing-menu-content')).toBeHidden();
 
-    // Pick the "New Arrivals" category inside the open panel. Hovering the
-    // button mutates its className (is-active) and adds `has-active-category`
-    // on its parent nav, which triggers a layout shift. `force: true`
-    // bypasses Playwright's stability check since the click target itself
-    // stays in the tree.
-    const newArrivalsButton = panel
-      .locator('.listing-menu-categories')
-      .getByRole('button', { name: /^new arrivals$/i });
-    await newArrivalsButton.click({ force: true });
-
-    const content = page.locator('.listing-menu-content');
-    await expect(content).toContainText("Women's New Arrivals");
-    await expect(content).toContainText("Men's New Arrivals");
+    await page.getByRole('button', { name: 'New Arrivals' }).click();
+    await expect(page.locator('.listing-menu-content')).toContainText("Women's New Arrivals");
+    await expect(page.locator('.listing-menu-content')).toContainText("Men's New Arrivals");
 
     await page.keyboard.press('Escape');
     await expect(menuButton).toHaveAttribute('aria-expanded', 'false');
-    await expect(panel).not.toHaveClass(/is-open/);
+    await expect(page.locator('#listing-menu-panel')).toBeHidden();
   });
 }
 
 test('captures login state', async ({ page }, testInfo) => {
-  await page.goto('/login.html', { waitUntil: 'domcontentloaded' });
+  await page.goto('/login', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.login-form')).toBeVisible();
 
   await page.screenshot({

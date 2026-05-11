@@ -39,6 +39,12 @@ function toListingProduct(product: PublicProduct): ListingProduct {
 export function ListingPage({ kind }: { kind: ListingKind }) {
   const { skeletonMode } = useUIState();
   const isMen = kind === 'men';
+
+  useEffect(() => {
+    document.title = isMen
+      ? 'New-in Apparel for Men | Spark Stage'
+      : 'New Arrivals | Spark Stage';
+  }, [isMen]);
   const heroVideoRef = useRef<HTMLVideoElement>(null);
   const [isHeroPaused, setIsHeroPaused] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);

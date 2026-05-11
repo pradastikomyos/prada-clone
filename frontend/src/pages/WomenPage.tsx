@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useQueries } from '@tanstack/react-query';
 import { ShopHeader } from '../components/layout/ShopHeader';
@@ -73,6 +73,7 @@ function toSection(
 }
 
 export function WomenPage() {
+  useEffect(() => { document.title = 'Spark Stage - Women'; }, []);
   const queries = useQueries({
     queries: SECTION_BLUEPRINT.map((section) => ({
       queryKey: ['women-category', section.category],

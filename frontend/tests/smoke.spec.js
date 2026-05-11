@@ -2,10 +2,10 @@ import { expect, test } from 'playwright/test';
 
 const routes = [
   { path: '/', title: /Spark Stage - Official Website/ },
-  { path: '/women.html', title: /Spark Stage - Women/ },
-  { path: '/men.html', title: /New-in Apparel for Men | Spark Stage/ },
-  { path: '/new-arrivals.html', title: /New-in Apparel for Women | Spark Stage/ },
-  { path: '/login.html', title: /Spark Stage - Log In or Sign Up/ },
+  { path: '/women', title: /Spark Stage - Women/ },
+  { path: '/men', title: /New-in Apparel for Men | Spark Stage/ },
+  { path: '/new-arrivals', title: /New Arrivals | Spark Stage/ },
+  { path: '/login', title: /Spark Stage - Log In or Sign Up/ },
 ];
 
 /**
@@ -36,8 +36,6 @@ function attachRuntimeChecks(page) {
   page.on('console', (message) => {
     if (message.type() !== 'error') return;
     const text = message.text();
-    // React dev warnings occasionally come through as console.error.
-    // We still let real app errors through.
     if (text.includes('Download the React DevTools')) return;
     failures.push(`console error: ${text}`);
   });

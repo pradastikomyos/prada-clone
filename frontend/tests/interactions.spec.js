@@ -14,10 +14,8 @@ test.describe('Interactions', () => {
   });
 
   test('Listing menu should close on Escape', async ({ page }) => {
-    await page.goto('/men.html', { waitUntil: 'domcontentloaded' });
+    await page.goto('/men', { waitUntil: 'domcontentloaded' });
 
-    // ListingHeader renders <ListingMenu />, which exposes a button with
-    // aria-label "Open menu" and class `.listing-menu-btn`.
     const menuBtn = page.getByRole('button', { name: /open menu/i });
     await expect(menuBtn).toHaveAttribute('aria-expanded', 'false');
 
@@ -33,10 +31,9 @@ test.describe('Interactions', () => {
   });
 
   test('Login password toggle should show/hide password', async ({ page }) => {
-    await page.goto('/login.html');
+    await page.goto('/login');
     const continueBtn = page.locator('.btn-continue');
 
-    // Enter email and continue to show password field
     await page.locator('#email').fill('test@example.com');
     await continueBtn.click();
 
@@ -52,23 +49,19 @@ test.describe('Interactions', () => {
   });
 
   test('Hero video pause/play should work', async ({ page }) => {
-    await page.goto('/men.html', { waitUntil: 'domcontentloaded' });
+    await page.goto('/men', { waitUntil: 'domcontentloaded' });
     const pauseBtn = page.locator('.listing-pause').first();
     const video = page.locator('.listing-hero-media').first();
 
-    // Wait until autoplay has settled (the page-level useEffect flips
-    // isHeroPaused based on video.paused once the `play` event fires).
     await expect(pauseBtn).toHaveAttribute('data-state', 'playing');
     await expect(pauseBtn).toHaveAttribute('aria-label', 'Pause video');
 
-    // Click pause → state flips to paused and the underlying <video> is paused.
     await pauseBtn.click();
     await expect(pauseBtn).toHaveAttribute('data-state', 'paused');
     await expect(pauseBtn).toHaveAttribute('aria-label', 'Play video');
     const isPaused = await video.evaluate((node) => node.paused);
     expect(isPaused).toBe(true);
 
-    // Click play → state flips back to playing.
     await pauseBtn.click();
     await expect(pauseBtn).toHaveAttribute('data-state', 'playing');
     await expect(pauseBtn).toHaveAttribute('aria-label', 'Pause video');

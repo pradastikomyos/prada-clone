@@ -1,4 +1,4 @@
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useMemo, useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { ViewIcon, ViewOffIcon } from '@hugeicons/core-free-icons';
@@ -6,6 +6,7 @@ import { BrandLogo } from '../components/ui/BrandLogo';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { getUserRole, resolvePostLoginPath } from '../services/auth';
 import { useSiteAssets } from '../hooks/useSiteAssets';
+import '../styles/login.css';
 
 export function LoginPage() {
   const [mode, setMode] = useState<'login' | 'signup'>('login');
@@ -20,6 +21,8 @@ export function LoginPage() {
   const navigate = useNavigate();
   const isSignup = mode === 'signup';
   const requestedRedirect = useMemo(() => new URLSearchParams(window.location.search).get('redirect'), []);
+
+  useEffect(() => { document.title = 'Spark Stage - Log In or Sign Up'; }, []);
 
   const submitAuth = async (event: FormEvent) => {
     event.preventDefault();

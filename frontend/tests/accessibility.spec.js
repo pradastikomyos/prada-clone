@@ -15,12 +15,8 @@ test('homepage menu button declares expanded state', async ({ page }) => {
 });
 
 test('shop header icon links have accessible names', async ({ page }) => {
-  await page.goto('/women.html', { waitUntil: 'domcontentloaded' });
+  await page.goto('/women', { waitUntil: 'domcontentloaded' });
 
-  // ShopHeader renders two links with aria-label values. getByRole with a
-  // regex name matcher occasionally misses aria-label-only links in CI, so
-  // target the attribute explicitly — this still validates the accessible
-  // name is present and correctly wired.
-  await expect(page.locator('a[aria-label="Back to homepage"]')).toBeVisible();
-  await expect(page.locator('a[aria-label="Spark Stage home"]').first()).toBeVisible();
+  await expect(page.getByRole('link', { name: /back/i })).toBeVisible();
+  await expect(page.getByRole('link', { name: /spark stage home/i })).toBeVisible();
 });
