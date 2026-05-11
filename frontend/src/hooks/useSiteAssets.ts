@@ -4,8 +4,12 @@ import { fetchSiteAssets, SITE_ASSET_FALLBACKS, type SiteAssetSlot } from '../se
 
 /**
  * Fetches all CMS-managed site asset URLs from Supabase.
- * Returns the fallback map immediately when Supabase is not configured.
- * Stale time is 5 minutes — assets don't change often.
+ *
+ * - When Supabase is not configured: returns fallback map immediately, isReady=true.
+ * - When Supabase is configured and query is loading: returns fallback map, isReady=false.
+ *   Components should wait for isReady before rendering media to avoid double-loading.
+ * - When query resolves: returns Storage URLs, isReady=true.
+ * - On error: falls back to local paths, isReady=true (don't block forever).
  */
 export function useSiteAssets() {
   const query = useQuery({
@@ -13,16 +17,19 @@ export function useSiteAssets() {
     queryFn: fetchSiteAssets,
     enabled: isSupabaseConfigured,
     staleTime: 5 * 60_000,
-    // On error, fall back to local paths silently
     retry: 1,
   });
 
-  // If Supabase not configured or query hasn't resolved yet, use fallbacks
+  // If Supabase is configured but query hasn't resolved yet, signal not ready
+  // so components don't render with fallback URLs (which causes double-loading).
+  const isReady = !isSupabaseConfigured || !query.isLoading;
+
   const assetMap: Record<SiteAssetSlot, string> =
     query.data ?? { ...SITE_ASSET_FALLBACKS };
 
   return {
     assetMap,
+    isReady,
     isLoading: query.isLoading,
   };
 }

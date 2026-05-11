@@ -124,8 +124,8 @@ export function HomePage() {
     setSearchOpen,
   } = useUIStore();
   const { skeletonMode } = useUIState();
-  const { assetMap } = useSiteAssets();
-  const homeSections = buildHomeSections(assetMap);
+  const { assetMap, isReady } = useSiteAssets();
+  const homeSections = isReady ? buildHomeSections(assetMap) : [];
   
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 

@@ -42,11 +42,13 @@ export function ListingPage({ kind }: { kind: ListingKind }) {
   const [isHeroPaused, setIsHeroPaused] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  const { assetMap } = useSiteAssets();
-  const heroVideoSrc = isMen
-    ? (assetMap['men.new-arrivals.hero.video'] ?? listingHeroVideo.men)
-    : (assetMap['women.new-arrivals.hero.video'] ?? listingHeroVideo.women);
-  const heroVideoType = heroVideoSrc.endsWith('.mp4') ? 'video/mp4' : 'video/webm';
+  const { assetMap, isReady: assetsReady } = useSiteAssets();
+  const heroVideoSrc = assetsReady
+    ? (isMen
+        ? (assetMap['men.new-arrivals.hero.video'] ?? listingHeroVideo.men)
+        : (assetMap['women.new-arrivals.hero.video'] ?? listingHeroVideo.women))
+    : null;
+  const heroVideoType = heroVideoSrc?.endsWith('.mp4') ? 'video/mp4' : 'video/webm';
 
   const staticProducts = isMen ? menNewArrivals : womenNewArrivals;
 
@@ -166,9 +168,13 @@ export function ListingPage({ kind }: { kind: ListingKind }) {
         </div>
 
         <section className="listing-hero">
-          <video ref={heroVideoRef} autoPlay muted loop playsInline className="listing-hero-media">
-            <source src={heroVideoSrc} type={heroVideoType} />
-          </video>
+          {heroVideoSrc ? (
+            <video ref={heroVideoRef} autoPlay muted loop playsInline className="listing-hero-media">
+              <source src={heroVideoSrc} type={heroVideoType} />
+            </video>
+          ) : (
+            <div className="listing-hero-media skeleton-media" aria-hidden="true" />
+          )}
           <button className="listing-pause" type="button" data-state={isHeroPaused ? 'paused' : 'playing'} aria-label={isHeroPaused ? 'Play video' : 'Pause video'} onClick={toggleHeroPlayback}>
             {isHeroPaused ? <Play weight="fill" size={18} /> : <Pause weight="fill" size={18} />}
           </button>
