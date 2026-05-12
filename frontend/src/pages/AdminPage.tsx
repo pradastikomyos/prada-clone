@@ -40,6 +40,9 @@ const DokuSection = lazy(() =>
 const DashboardSection = lazy(() =>
   import('./admin/DashboardSection').then((m) => ({ default: m.DashboardSection })),
 );
+const CmsSection = lazy(() =>
+  import('./admin/CmsSection').then((m) => ({ default: m.CmsSection })),
+);
 
 function SectionFallback() {
   return (
@@ -224,6 +227,7 @@ export function AdminPage() {
           {tab === 'inventory' && <InventorySection isReady={isReady} />}
           {tab === 'orders' && <OrdersSection isReady={isReady} />}
           {tab === 'bopis' && <BopisSection />}
+          {tab === 'cms' && <CmsSection isReady={isReady} />}
           {tab === 'doku' && <DokuSection isReady={isReady} />}
         </Suspense>
       </div>

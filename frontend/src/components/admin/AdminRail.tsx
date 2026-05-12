@@ -1,5 +1,6 @@
 import {
   DashboardSquare03Icon,
+  ImageAdd02Icon,
   Invoice03Icon,
   QrCodeScanIcon,
   Settings02Icon,
@@ -23,6 +24,9 @@ export function AdminRail({ currentView, onChangeView }: { currentView: AdminVie
       </button>
       <button className={`admin-rail-button ${currentView === 'bopis' ? 'is-active' : ''}`} type="button" aria-label="Pickup" title="BOPIS Pickup" onClick={() => onChangeView('bopis')}>
         <AdminIcon icon={QrCodeScanIcon} size={22} />
+      </button>
+      <button className={`admin-rail-button ${currentView === 'cms' ? 'is-active' : ''}`} type="button" aria-label="CMS Assets" title="CMS Assets" onClick={() => onChangeView('cms')}>
+        <AdminIcon icon={ImageAdd02Icon} size={22} />
       </button>
       <button className={`admin-rail-button ${currentView === 'doku' ? 'is-active' : ''} admin-rail-bottom`} type="button" aria-label="Settings" title="Settings" onClick={() => onChangeView('doku')}>
         <AdminIcon icon={Settings02Icon} size={22} />

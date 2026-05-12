@@ -129,6 +129,26 @@ export async function listAdminOrders() {
   return (data ?? []) as AdminOrder[];
 }
 
+export async function getOrderByPickupCode(code: string) {
+  const client = requireSupabaseClient();
+  const { data, error } = await client
+    .from('pickup_codes')
+    .select(`
+      code,
+      order_id,
+      orders(
+        id, invoice_number, customer_name, customer_email, customer_phone,
+        status, payment_status, total_amount_idr, paid_at, picked_up_at, created_at,
+        order_items(product_name, sku, quantity, unit_price_idr, line_total_idr)
+      )
+    `)
+    .eq('code', code.toUpperCase().trim())
+    .maybeSingle();
+  if (error) throw error;
+  if (!data?.orders) return null;
+  return data.orders as unknown as AdminOrder;
+}
+
 export async function verifyPickupCode(code: string) {
   const client = requireSupabaseClient();
   const { data, error } = await client.functions.invoke('verify-pickup-code', {
@@ -253,12 +273,24 @@ export async function getProductBySlug(slug: string) {
       category,
       base_price_idr,
       sort_order,
-      product_images(image_url, alt, sort_order)
+      product_images(image_url, alt, sort_order),
+      product_variants(id, name, sku, price_idr, stock_quantity, attributes)
     `)
     .eq('slug', slug)
     .eq('status', 'active')
     .maybeSingle();
 
   if (error) throw error;
-  return (data ?? null) as PublicProduct | null;
+  return (data ?? null) as PublicProductWithVariants | null;
 }
+
+export type PublicProductWithVariants = PublicProduct & {
+  product_variants: Array<{
+    id: string;
+    name: string;
+    sku: string;
+    price_idr: number;
+    stock_quantity: number;
+    attributes: Record<string, string> | null;
+  }>;
+};

@@ -1,4 +1,4 @@
-# Session Log — 11 Mei 2026
+# Session Log — 11–12 Mei 2026
 
 Sesi panjang multi-topik. Dicatat untuk referensi sesi berikutnya dan sebagai handoff context.
 
@@ -7,10 +7,10 @@ Sesi panjang multi-topik. Dicatat untuk referensi sesi berikutnya dan sebagai ha
 ## Status Akhir Sesi
 
 - **Typecheck**: hijau
-- **Build**: hijau
+- **Build**: hijau (5293 modules, ~1.3s)
 - **Vercel deployment**: `prada-clone-rho.vercel.app` (project `prada-clone`)
 - **Supabase**: project `backendsparkecommerce` (ref `xyhdnprncjvhtdfyovpx`), semua migration applied
-- **GitHub**: `pradastikomyos/prada-clone`, branch `main`, commit terakhir belum di-push (beberapa perubahan sore ini masih local)
+- **GitHub**: `pradastikomyos/prada-clone`, branch `main`, siap untuk commit berisi PR 1 (BOPIS scanner), PR 2 (Orders tabs), PR 3 (CMS Banner)
 
 ---
 
@@ -87,6 +87,57 @@ Sesi panjang multi-topik. Dicatat untuk referensi sesi berikutnya dan sebagai ha
 - Semua 33 produk + 33 variant di-update ke `IDR 399.999` via Supabase MCP SQL
 - Siap untuk testing DOKU sandbox
 
+### 11. DOKU Payment Gateway (Sandbox)
+- Cart flow end-to-end: CartDrawer + `addItemToCart` + checkout mutation
+- Fix 502: DOKU sandbox reject `phone: ''`. Edge function v3 pakai conditional spread (hanya kirim phone/email kalau non-empty)
+- Test sandbox VA BCA: sukses
+- DOKU hosted-page redirect full-page adalah by-design (Checkout hosted page, bukan popup) — diterima user
+
+### 12. Checkout Result Page (`/checkout-result?invoice=...`)
+- Animated green SVG checkmark (CSS stroke-dashoffset keyframes)
+- Heading "Payment Successful" + body copy Bahasa
+- Pickup code card + QR code via `qrcode` library
+- Order summary (items, subtotal, total)
+- Polling setiap 4s (max 15 attempts) untuk transisi `pending_payment → pending_pickup`
+- Query: `getOrderByInvoice(invoiceNumber)` di `services/commerce.ts`
+
+### 13. Price + Size Variants untuk Dev
+- Semua 33 produk → IDR 399.999
+- `EMBROIDERED LINEN SKIRT` (WNA002) → IDR 10.000 untuk testing sandbox cepat
+- Stock semua variant → 100
+- 25 apparel products dapat S/M/L/XL variants (100 variant rows baru via MCP SQL)
+- Accessories/bags/shoes tetap single-variant
+- `ProductPage.tsx`: size picker UI (buttons S/M/L/XL, sold-out strikethrough, "SELECT SIZE" prompt)
+- `getProductBySlug()` sekarang include `product_variants`
+
+### 14. PR 1 — BOPIS Real QR Scanner (clean chat session)
+- Install `html5-qrcode@2.3.8`
+- **New** `frontend/src/hooks/useQrScanner.ts` — encapsulates `Html5Qrcode` instance, rear-camera detection, 1500ms debounce, cleanup on unmount
+- **New** `frontend/src/components/admin/QrScannerModal.tsx` — full-screen modal dengan camera lifecycle, error fallback, retry button
+- **New** `services/commerce.ts :: getOrderByPickupCode()` — join `pickup_codes` → `orders` untuk preview sebelum verify
+- Update `PickupVerificationCard` — tambah props `onOpenScanner`, `orderDetail`, `isLoadingOrder`; tampilkan Pre-Verify preview (invoice, customer, items, total, pickup code)
+- Update `BopisSection` — state `isScannerOpen`, `pickupCode`, orderQuery (enabled kalau code ≥ 3 chars), verifyMutation
+
+### 15. PR 2 — Orders Section Real Data (clean chat session)
+- **New** `frontend/src/pages/admin/orderHelpers.ts` — `classifyOrder()`, `getPendingPaymentOrders()`, `getPendingPickupOrders()`, `getCompletedOrders()`, `getCancelledOrders()`. Map 6-state `OrderStatus` enum → 4 UI kategori
+- `OrdersSection` — tabs (Pending Payment / Pending Pickup / Completed / All), `refetchInterval: 15_000`, tab counts, selected order auto-reset saat switch tab
+- `OrdersCard` — tab-aware timestamps (paid_at untuk Pending Pickup, picked_up_at untuk Completed), status badges dengan color tokens, order items list dengan line totals
+
+### 16. PR 3 — Banner/Hero CMS Admin (clean chat session)
+- **New** `frontend/src/components/admin/CmsAssetField.tsx` — reusable slot UI: preview (img/video), file picker, paste URL, Save button dengan pending state
+- **New** `frontend/src/services/uploadSiteAsset.ts` — upload file → `site-assets` bucket, get publicUrl, update `site_assets` row (public_url, storage_path, mime_type)
+- **New** `services/siteAssets.ts :: fetchSiteAssetsAdmin()` + `updateSiteAssetUrl()`
+- **New** `frontend/src/pages/admin/CmsSection.tsx` — group slots by prefix (home/women/men/login), render `CmsAssetField` per slot, invalidate `site-assets` + `site-assets-admin` queries on save
+- Update `AdminRail` + `AdminSidebar` — tambah CMS nav item (ImageAdd02Icon)
+- Update `admin/types.ts` — `ADMIN_VIEWS` include `'cms'`
+- Update `AdminPage.tsx` — lazy import `CmsSection` + `cms` tab route
+- Update `shop.css` — styles untuk QR modal, orders tabs, CMS fields, orders list
+
+### 17. RLS Verification
+- `storage.objects` policies untuk `site-assets` bucket: admin SELECT/INSERT/UPDATE/DELETE via `profiles.role = 'admin'`. Public SELECT allowed.
+- `public.site_assets` policies: `Admins manage site assets` (ALL via `is_admin()`), `Public can read site assets` (SELECT).
+- Admin CMS upload flow akan bekerja dengan auth session biasa (tanpa service role).
+
 ---
 
 ## Perubahan yang Belum Di-commit/Push
@@ -103,12 +154,15 @@ Sesi panjang multi-topik. Dicatat untuk referensi sesi berikutnya dan sebagai ha
 |---|---|---|
 | Testing DOKU sandbox end-to-end | ✅ DONE | VA BCA berhasil, 502 phone fix deployed |
 | Payment status page (post-DOKU redirect) | ✅ DONE | `/checkout-result` dengan animated checkmark, QR, polling |
+| PR 1 BOPIS scanner (html5-qrcode) | ✅ DONE | 12 Mei 2026 (clean chat) |
+| PR 2 Orders tabs + 15s refetch | ✅ DONE | 12 Mei 2026 (clean chat) |
+| PR 3 CMS Banner admin | ✅ DONE | 12 Mei 2026 (clean chat), RLS verified |
+| PR 4 Customer Order History | TODO | Blocked: `orders.user_id` belum di-populate oleh `create-doku-checkout` edge function |
+| PR 5 Admin Polish (total stock, dashboard numbers) | TODO | Sidebar total stock masih hardcode 0 |
+| Admin CMS manual QA di browser (real admin login) | HIGH | Upload + paste URL flow belum dikonfirmasi di browser |
 | PR 4 lanjutan (inline style cleanup) | MEDIUM | `ProductPage` meta margin/error, `InventoryDetailCard`, `PickupVerificationCard` |
 | PR 5 CSS validation guardrail (opsional) | LOW | stylelint evaluation |
-| Admin total stock di sidebar (hardcode 0) | MEDIUM | Feed dari query atau shared state |
 | Cart flow manual QA | HIGH | Belum dikonfirmasi end-to-end di production |
-| M4: migrate product images ke Supabase Storage | MEDIUM | Upload sudah done, tapi `product_images.image_url` perlu verified di production |
-| React Router URL di Playwright tests | DONE | Sudah diupdate ke clean URLs |
 | `useSearchParamState` hook | CLEANUP | Masih ada di codebase tapi tidak dipakai lagi setelah admin pakai `useParams` |
 
 ---

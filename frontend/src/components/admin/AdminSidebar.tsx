@@ -2,6 +2,7 @@ import {
   Add01Icon,
   ArrowDown01Icon,
   DashboardSquare03Icon,
+  ImageAdd02Icon,
   Invoice03Icon,
   Logout03Icon,
   PackageIcon,
@@ -61,6 +62,9 @@ export function AdminSidebar({ email, totalStock, currentView, onChangeView, onA
         </button>
         <button className={currentView === 'bopis' ? 'is-current' : ''} type="button" onClick={() => onChangeView('bopis')}>
           <span><AdminIcon icon={QrCodeScanIcon} size={18} /> BOPIS Verify</span>
+        </button>
+        <button className={currentView === 'cms' ? 'is-current' : ''} type="button" onClick={() => onChangeView('cms')}>
+          <span><AdminIcon icon={ImageAdd02Icon} size={18} /> CMS Assets</span>
         </button>
         <button className={currentView === 'doku' ? 'is-current' : ''} type="button" onClick={() => onChangeView('doku')}>
           <span><AdminIcon icon={Payment02Icon} size={18} /> DOKU Sandbox</span>

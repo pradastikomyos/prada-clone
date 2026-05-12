@@ -9,6 +9,7 @@ import { getProductBySlug } from '../services/commerce';
 import { addItemToCart, LOGIN_REQUIRED } from '../services/cart';
 import { useCartSummary } from '../hooks/useCartSummary';
 import type { ListingProduct } from '../types/catalog';
+import type { PublicProductWithVariants } from '../services/commerce';
 
 const IDR = new Intl.NumberFormat('id-ID', {
   style: 'currency',
@@ -73,6 +74,7 @@ export function ProductPage() {
   const cartSummary = useCartSummary();
   const navigate = useNavigate();
   const [addError, setAddError] = useState<string | null>(null);
+  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
 
   // Support both /product/:slug (new) and ?slug= / ?name= (legacy redirects)
   const { slug: paramSlug } = useParams<{ slug: string }>();
@@ -87,6 +89,23 @@ export function ProductPage() {
     queryFn: () => getProductBySlug(fallbackSlug as string),
     enabled: isSupabaseConfigured && Boolean(fallbackSlug),
   });
+
+  // Variants from Supabase — sorted S/M/L/XL
+  const SIZE_ORDER = ['S', 'M', 'L', 'XL', 'XXL'];
+  const variants = useMemo(() => {
+    const raw = (productQuery.data as PublicProductWithVariants | null)?.product_variants ?? [];
+    return [...raw].sort((a, b) => {
+      const ai = SIZE_ORDER.indexOf(a.name);
+      const bi = SIZE_ORDER.indexOf(b.name);
+      if (ai === -1 && bi === -1) return a.name.localeCompare(b.name);
+      if (ai === -1) return 1;
+      if (bi === -1) return -1;
+      return ai - bi;
+    });
+  }, [productQuery.data]);
+
+  const hasVariants = variants.length > 1;
+  const selectedVariant = variants.find((v) => v.id === selectedVariantId) ?? null;
 
   const staticIndex = useMemo(() => buildStaticIndex(), []);
 
@@ -122,7 +141,13 @@ export function ProductPage() {
   const addMutation = useMutation({
     mutationFn: async () => {
       if (!resolved.id) throw new Error('NO_PRODUCT_ID');
-      await addItemToCart({ productId: resolved.id, quantity: 1 });
+      // If product has size variants, require selection
+      if (hasVariants && !selectedVariantId) throw new Error('SIZE_REQUIRED');
+      await addItemToCart({
+        productId: resolved.id,
+        variantId: selectedVariantId ?? undefined,
+        quantity: 1,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cart', cartSummary.userId] });
@@ -135,13 +160,18 @@ export function ProductPage() {
         navigate(`/login?redirect=${encodeURIComponent(redirect)}`);
         return;
       }
+      if (error instanceof Error && error.message === 'SIZE_REQUIRED') {
+        setAddError('Please select a size before adding to bag.');
+        return;
+      }
       setAddError(error instanceof Error ? error.message : 'Failed to add to bag.');
     },
   });
 
   const canAdd = Boolean(resolved.id) && isSupabaseConfigured;
+  const needsSizeSelection = hasVariants && !selectedVariantId;
   const addDisabled = !canAdd || addMutation.isPending;
-  const addLabel = addMutation.isPending ? 'ADDING…' : 'ADD';
+  const addLabel = addMutation.isPending ? 'ADDING…' : needsSizeSelection ? 'SELECT SIZE' : 'ADD';
   const addHint = canAdd
     ? undefined
     : 'Add to bag is only available when Supabase is configured and the product comes from the catalog.';
@@ -199,6 +229,31 @@ export function ProductPage() {
             <hr className="zara-divider" />
 
             {resolved.sku ? <p className="zara-product-meta">SKU {resolved.sku}</p> : null}
+
+            {/* Size picker — only shown when product has size variants */}
+            {hasVariants && (
+              <div className="pdp-size-picker">
+                <p className="pdp-size-label">SIZE</p>
+                <div className="pdp-size-options">
+                  {variants.map((v) => (
+                    <button
+                      key={v.id}
+                      type="button"
+                      className={`pdp-size-btn${selectedVariantId === v.id ? ' is-selected' : ''}${v.stock_quantity === 0 ? ' is-sold-out' : ''}`}
+                      disabled={v.stock_quantity === 0}
+                      aria-pressed={selectedVariantId === v.id}
+                      aria-label={`Size ${v.name}${v.stock_quantity === 0 ? ', sold out' : ''}`}
+                      onClick={() => {
+                        setSelectedVariantId(v.id);
+                        setAddError(null);
+                      }}
+                    >
+                      {v.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <button
               type="button"

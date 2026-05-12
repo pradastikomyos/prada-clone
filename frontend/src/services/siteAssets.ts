@@ -8,6 +8,7 @@
 
 import { requireSupabaseClient } from '../lib/supabase';
 
+
 export type SiteAssetSlot =
   | 'home.hero.video'
   | 'home.spring-summer.women.mosaic'
@@ -52,4 +53,30 @@ export async function fetchSiteAssets(): Promise<Record<SiteAssetSlot, string>> 
     }
   }
   return map;
+}
+
+/**
+ * Fetches all site asset rows for the admin CMS panel.
+ * Returns full row data (slot, public_url, mime_type, label).
+ */
+export async function fetchSiteAssetsAdmin(): Promise<SiteAsset[]> {
+  const client = requireSupabaseClient();
+  const { data, error } = await client
+    .from('site_assets')
+    .select('slot, public_url, mime_type, label')
+    .order('slot');
+  if (error) throw error;
+  return (data ?? []) as SiteAsset[];
+}
+
+/**
+ * Updates the public_url of a site asset slot directly (paste URL flow).
+ */
+export async function updateSiteAssetUrl(slot: SiteAssetSlot, publicUrl: string): Promise<void> {
+  const client = requireSupabaseClient();
+  const { error } = await client
+    .from('site_assets')
+    .update({ public_url: publicUrl })
+    .eq('slot', slot);
+  if (error) throw error;
 }
