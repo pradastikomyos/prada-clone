@@ -105,6 +105,36 @@ function extractPaymentStatus(payload: Record<string, unknown>) {
   return 'pending';
 }
 
+function extractAmount(payload: Record<string, unknown>) {
+  const order = payload.order as Record<string, unknown> | undefined;
+  const amount = order?.amount ?? payload.amount;
+  const numericAmount = typeof amount === 'number' ? amount : Number(amount);
+  return Number.isFinite(numericAmount) ? numericAmount : null;
+}
+
+function extractProviderReference(payload: Record<string, unknown>) {
+  const order = payload.order as Record<string, unknown> | undefined;
+  const transaction = payload.transaction as Record<string, unknown> | undefined;
+  const payment = payload.payment as Record<string, unknown> | undefined;
+
+  return (
+    order?.session_id ??
+    transaction?.id ??
+    transaction?.transaction_id ??
+    payment?.id ??
+    null
+  ) as string | null;
+}
+
+function dokuHeaderSnapshot(req: Request) {
+  return {
+    client_id: req.headers.get('Client-Id'),
+    request_id: req.headers.get('Request-Id'),
+    request_timestamp: req.headers.get('Request-Timestamp'),
+    signature: req.headers.get('Signature'),
+  };
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   if (req.method === 'GET' || req.method === 'HEAD') {
@@ -141,33 +171,26 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(requiredEnv('SUPABASE_URL'), requiredEnv('SUPABASE_SERVICE_ROLE_KEY'));
 
-    if (paymentStatus === 'paid') {
-      const { data, error } = await supabase.rpc('activate_paid_order', {
-        target_invoice_number: invoiceNumber,
-        raw_notification: payload,
-      });
-
-      if (error) throw error;
-      return jsonResponse({ ok: true, status: 'paid', result: data });
-    }
-
-    const mappedOrderStatus = paymentStatus === 'expired'
-      ? 'expired'
-      : paymentStatus === 'cancelled'
-        ? 'cancelled'
-        : 'pending_payment';
-
-    const { error } = await supabase
-      .from('orders')
-      .update({
-        payment_status: paymentStatus,
-        status: mappedOrderStatus,
-      })
-      .eq('invoice_number', invoiceNumber);
+    const { data, error } = await supabase.rpc('process_doku_payment_event', {
+      target_invoice_number: invoiceNumber,
+      event_source: 'webhook',
+      event_status: paymentStatus,
+      raw_event: payload,
+      event_headers: dokuHeaderSnapshot(req),
+      provider_request_id: req.headers.get('Request-Id'),
+      provider_reference: extractProviderReference(payload),
+      amount_idr: extractAmount(payload),
+    });
 
     if (error) throw error;
 
-    return jsonResponse({ ok: true, status: paymentStatus });
+    const result = Array.isArray(data) ? data[0] : data;
+
+    if (result?.processing_status === 'failed') {
+      return jsonResponse({ ok: false, status: paymentStatus, result }, 500);
+    }
+
+    return jsonResponse({ ok: true, status: paymentStatus, result });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unexpected webhook error';
     return jsonResponse({ error: message }, 500);

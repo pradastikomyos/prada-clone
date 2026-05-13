@@ -1,5 +1,5 @@
 import { requireSupabaseClient } from '../lib/supabase';
-import { AdminOrder, AdminProduct, ProductFormInput, PublicProduct } from '../types/commerce';
+import { AdminOrder, AdminProduct, PaymentStatus, ProductFormInput, PublicProduct } from '../types/commerce';
 
 export function slugify(value: string) {
   return value
@@ -179,6 +179,103 @@ export async function createDokuCheckout(input: {
   };
 }
 
+export type CheckoutResultKind = 'found' | 'pending' | 'paid' | 'not_owner' | 'not_found';
+
+export type CheckoutResultResponse = {
+  kind: CheckoutResultKind;
+  order: CheckoutResultOrder | null;
+  message?: string;
+  can_reconcile?: boolean;
+  raw?: unknown;
+};
+
+export type DokuReconcileResponse = {
+  ok: boolean;
+  invoice_number?: string;
+  order?: CheckoutResultOrder | null;
+  payment_status?: PaymentStatus | string;
+  provider_status?: string;
+  changed?: boolean;
+  message?: string;
+  raw?: unknown;
+};
+
+function normalizeCheckoutResult(data: any): CheckoutResultResponse {
+  const result = data?.result ?? data;
+  const order = (result?.order ?? null) as CheckoutResultOrder | null;
+  const rawKind = result?.kind ?? result?.outcome ?? result?.status;
+  const kind: CheckoutResultKind =
+    rawKind === 'not_owner' ||
+    rawKind === 'not_found' ||
+    rawKind === 'pending' ||
+    rawKind === 'paid' ||
+    rawKind === 'found'
+      ? rawKind
+      : order
+        ? 'found'
+        : 'not_found';
+
+  return {
+    kind,
+    order,
+    message: result?.message,
+    can_reconcile: result?.can_reconcile ?? result?.canReconcile,
+    raw: data,
+  };
+}
+
+/**
+ * Customer-safe checkout result lookup. The server function owns the privileged
+ * order read and can distinguish missing invoices from RLS/ownership denial.
+ */
+export async function getCheckoutResult(invoiceNumber: string) {
+  const client = requireSupabaseClient();
+  const { data, error } = await client.functions.invoke('get-checkout-result', {
+    body: {
+      invoice_number: invoiceNumber,
+      invoiceNumber,
+    },
+  });
+
+  if (error) throw error;
+  if (data?.error && !data?.status && !data?.kind && !data?.outcome) {
+    throw new Error(data.error);
+  }
+
+  return normalizeCheckoutResult(data);
+}
+
+/**
+ * Ask the backend to reconcile one DOKU checkout via provider status APIs.
+ * The browser only sends an invoice/order identifier; DOKU secrets remain server-side.
+ */
+export async function reconcileDokuPayment(input: { invoice_number?: string; invoiceNumber?: string; order_id?: string }) {
+  const client = requireSupabaseClient();
+  const invoiceNumber = input.invoice_number ?? input.invoiceNumber;
+  const { data, error } = await client.functions.invoke('reconcile-doku-payment', {
+    body: {
+      ...input,
+      invoice_number: invoiceNumber,
+      invoiceNumber,
+    },
+  });
+
+  if (error) throw error;
+  if (data?.error) throw new Error(data.error);
+
+  const result = data?.result ?? data;
+  return {
+    ok: result?.ok ?? true,
+    invoice_number: result?.invoice_number ?? result?.invoiceNumber ?? invoiceNumber,
+    order: (result?.order ?? null) as CheckoutResultOrder | null,
+    payment_status: result?.payment_status ?? result?.paymentStatus,
+    provider_status: result?.provider_status ?? result?.providerStatus ?? result?.doku_status,
+    changed: result?.changed ?? result?.reconciled ?? result?.updated,
+    message: result?.message,
+    raw: data,
+  } satisfies DokuReconcileResponse;
+}
+
 /**
  * Public product listing for the storefront. Filters by category and orders
  * by sort_order. Does not require authentication (RLS allows public read of
@@ -260,6 +357,105 @@ export type CheckoutResultOrder = {
     line_total_idr: number;
   }> | null;
 };
+
+export type AdminPaymentAttempt = {
+  id: string;
+  order_id: string;
+  provider: string;
+  provider_reference: string | null;
+  request_id: string | null;
+  status: PaymentStatus | string;
+  amount_idr: number;
+  raw_payload: unknown;
+  created_at: string;
+  updated_at: string;
+  order: Pick<
+    AdminOrder,
+    'id' | 'invoice_number' | 'customer_name' | 'customer_email' | 'status' | 'payment_status' | 'total_amount_idr' | 'paid_at' | 'created_at'
+  > | null;
+};
+
+export type AdminPaymentEvent = {
+  id: string;
+  order_id?: string | null;
+  invoice_number?: string | null;
+  provider?: string | null;
+  event_source?: string | null;
+  provider_event_id?: string | null;
+  provider_request_id?: string | null;
+  request_id?: string | null;
+  event_type?: string | null;
+  status?: string | null;
+  processing_status?: string | null;
+  error_message?: string | null;
+  raw_payload?: unknown;
+  processed_at?: string | null;
+  created_at?: string | null;
+};
+
+function firstRelated<T>(value: T | T[] | null | undefined): T | null {
+  if (Array.isArray(value)) return value[0] ?? null;
+  return value ?? null;
+}
+
+export async function listAdminPaymentAttempts(limit = 50) {
+  const client = requireSupabaseClient();
+  const { data, error } = await client
+    .from('payment_attempts')
+    .select(`
+      id,
+      order_id,
+      provider,
+      provider_reference,
+      request_id,
+      status,
+      amount_idr,
+      raw_payload,
+      created_at,
+      updated_at,
+      orders(
+        id,
+        invoice_number,
+        customer_name,
+        customer_email,
+        status,
+        payment_status,
+        total_amount_idr,
+        paid_at,
+        created_at
+      )
+    `)
+    .order('updated_at', { ascending: false })
+    .limit(limit);
+
+  if (error) throw error;
+
+  return (data ?? []).map((row: any) => ({
+    id: row.id,
+    order_id: row.order_id,
+    provider: row.provider,
+    provider_reference: row.provider_reference,
+    request_id: row.request_id,
+    status: row.status,
+    amount_idr: row.amount_idr,
+    raw_payload: row.raw_payload,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+    order: firstRelated(row.orders),
+  })) as AdminPaymentAttempt[];
+}
+
+export async function listAdminPaymentEvents(limit = 50) {
+  const client = requireSupabaseClient();
+  const { data, error } = await client
+    .from('payment_events')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) return [];
+  return (data ?? []) as AdminPaymentEvent[];
+}
 export async function getProductBySlug(slug: string) {
   const client = requireSupabaseClient();
   const { data, error } = await client

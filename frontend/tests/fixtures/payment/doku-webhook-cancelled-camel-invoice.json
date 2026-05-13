@@ -1,0 +1,10 @@
+{
+  "order": {
+    "invoiceNumber": "INV-PAYMENT-CANCELLED-001",
+    "amount": 459000
+  },
+  "payment": {
+    "status": "CANCELED",
+    "channel": "CREDIT_CARD"
+  }
+}

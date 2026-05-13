@@ -25,5 +25,6 @@ export { ProductFormCard } from './ProductFormCard';
 export { PickupVerificationCard } from './PickupVerificationCard';
 export { OrdersCard } from './OrdersCard';
 export { DokuCheckoutCard } from './DokuCheckoutCard';
+export { PaymentHealthCard } from './PaymentHealthCard';
 export { DashboardView } from './DashboardView';
 export * from './AdminSkeleton';

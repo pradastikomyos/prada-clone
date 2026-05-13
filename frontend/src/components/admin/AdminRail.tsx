@@ -2,6 +2,7 @@ import {
   DashboardSquare03Icon,
   ImageAdd02Icon,
   Invoice03Icon,
+  Payment02Icon,
   QrCodeScanIcon,
   Settings02Icon,
   ShoppingBag03Icon,
@@ -21,6 +22,9 @@ export function AdminRail({ currentView, onChangeView }: { currentView: AdminVie
       </button>
       <button className={`admin-rail-button ${currentView === 'orders' ? 'is-active' : ''}`} type="button" aria-label="Orders" title="Orders" onClick={() => onChangeView('orders')}>
         <AdminIcon icon={Invoice03Icon} size={22} />
+      </button>
+      <button className={`admin-rail-button ${currentView === 'payments' ? 'is-active' : ''}`} type="button" aria-label="Payment Health" title="Payment Health" onClick={() => onChangeView('payments')}>
+        <AdminIcon icon={Payment02Icon} size={22} />
       </button>
       <button className={`admin-rail-button ${currentView === 'bopis' ? 'is-active' : ''}`} type="button" aria-label="Pickup" title="BOPIS Pickup" onClick={() => onChangeView('bopis')}>
         <AdminIcon icon={QrCodeScanIcon} size={22} />

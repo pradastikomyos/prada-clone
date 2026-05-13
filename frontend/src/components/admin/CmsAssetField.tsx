@@ -86,13 +86,13 @@ export function CmsAssetField({
   };
 
   return (
-    <div className="admin-cms-field">
-      <p className="admin-cms-label">
-        <strong>{label}</strong>
-        <span className="admin-muted">{slot}</span>
-      </p>
+    <div className="cms-asset-card">
+      <div className="cms-asset-header">
+        <strong className="cms-asset-label">{label}</strong>
+        <code className="cms-asset-slot">{slot}</code>
+      </div>
 
-      <div className={`admin-cms-preview ${displayIsVideo ? 'admin-cms-preview--video' : 'admin-cms-preview--image'}`}>
+      <div className="cms-asset-preview">
         {displayUrl ? (
           displayIsVideo ? (
             <video
@@ -101,22 +101,27 @@ export function CmsAssetField({
               controls
               muted
               playsInline
-              style={{ maxWidth: '100%', maxHeight: '200px' }}
+              className="cms-asset-media"
             />
           ) : (
             <img
               key={displayUrl}
               src={displayUrl}
               alt={label}
-              style={{ maxWidth: '100%', maxHeight: '200px', objectFit: 'cover' }}
+              className="cms-asset-media"
             />
           )
         ) : (
-          <span className="admin-muted">No asset set</span>
+          <div className="cms-asset-empty">
+            <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span>No asset set</span>
+          </div>
         )}
       </div>
 
-      <div className="admin-cms-actions">
+      <div className="cms-asset-controls">
         {/* Hidden file input */}
         <input
           ref={fileInputRef}
@@ -126,48 +131,53 @@ export function CmsAssetField({
           onChange={handleFileChange}
           aria-label={`Upload file for ${label}`}
         />
-        <button
-          type="button"
-          className="admin-btn admin-btn--secondary"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={isSaving}
-        >
-          Upload File
-        </button>
+
+        <div className="cms-asset-btn-row">
+          <button
+            type="button"
+            className="cms-btn cms-btn--secondary"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isSaving}
+          >
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+            Upload File
+          </button>
+          <button
+            type="button"
+            className={`cms-btn ${hasPending && !isSaving ? 'cms-btn--primary' : 'cms-btn--disabled'}`}
+            onClick={handleSave}
+            disabled={!hasPending || isSaving}
+          >
+            {isSaving ? 'Saving…' : 'Save'}
+          </button>
+        </div>
 
         <input
           type="text"
-          className="admin-cms-url-input"
+          className="cms-url-input"
           placeholder="Or paste URL…"
           value={pendingUrl}
           onChange={handleUrlChange}
           disabled={isSaving}
           aria-label={`Paste URL for ${label}`}
         />
-
-        <button
-          type="button"
-          className="admin-cms-save-btn"
-          onClick={handleSave}
-          disabled={!hasPending || isSaving}
-        >
-          {isSaving ? 'Saving…' : 'Save'}
-        </button>
       </div>
 
       {pendingFile && (
-        <p className="admin-cms-status admin-muted">
+        <p className="admin-muted" style={{ margin: 0, fontSize: 12 }}>
           Pending: {pendingFile.name} ({(pendingFile.size / 1024).toFixed(1)} KB)
         </p>
       )}
 
       {status === 'success' && (
-        <p className="admin-cms-status" style={{ color: 'var(--color-success, #22c55e)' }}>
-          Saved successfully.
+        <p className="admin-success" style={{ margin: 0 }}>
+          ✓ Saved successfully.
         </p>
       )}
       {status === 'error' && (
-        <p className="admin-cms-status" style={{ color: 'var(--color-error, #ef4444)' }}>
+        <p className="admin-error" style={{ margin: 0 }}>
           Error: {errorMessage}
         </p>
       )}

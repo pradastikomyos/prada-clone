@@ -1,0 +1,17 @@
+{
+  "response": {
+    "headers": {
+      "requestId": "0a58c9a2-8afe-4950-a86e-46d17f3df500"
+    },
+    "order": {
+      "invoice_number": "INV-PAYMENT-PENDING-001",
+      "amount": 2390000
+    },
+    "transaction": {
+      "status": "PENDING"
+    },
+    "payment": {
+      "channel": "VIRTUAL_ACCOUNT_BRI"
+    }
+  }
+}

@@ -1,18 +1,20 @@
 import { Link } from 'react-router-dom';
 import { BrandLogo } from '../ui/BrandLogo';
-import { SearchIcon } from '../ui/Icons';
+import { SearchIcon, MenuIcon } from '../ui/Icons';
 import { UserHeaderActions } from '../ui/UserHeaderActions';
 import { CartHeaderButton } from '../ui/CartHeaderButton';
 import { useUIStore } from '../../store/uiStore';
-import { ListingMenu } from '../navigation/ListingMenu';
 
 export function ListingHeader() {
-  const { setSearchOpen } = useUIStore();
+  const { setMenuOpen, setSearchOpen } = useUIStore();
 
   return (
     <header className="listing-header">
       <div className="listing-header-left">
-        <ListingMenu />
+        <button className="listing-menu-btn" type="button" aria-label="Open menu" onClick={() => setMenuOpen(true)}>
+          <MenuIcon />
+          <span>Menu</span>
+        </button>
         <button className="listing-search-link is-placeholder" type="button" aria-label="Search" onClick={() => setSearchOpen(true)}>
           <SearchIcon />
           <span>Search</span>

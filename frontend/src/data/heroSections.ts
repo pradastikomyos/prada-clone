@@ -28,7 +28,7 @@ export function buildHomeSections(
       title: "Women's New Arrivals",
       mediaType: 'video',
       src: get('women.new-arrivals.hero.video'),
-      links: [{ text: "Women's New Arrivals", href: '/new-arrivals' }],
+      links: [{ text: "Women's New Arrivals", href: '/women/new-arrivals' }],
     },
     {
       id: 'spring-summer-women',
@@ -42,7 +42,7 @@ export function buildHomeSections(
       title: "Men's New Arrivals",
       mediaType: 'image',
       src: get('home.spring-summer.men.mosaic'),
-      links: [{ text: "Men's New Arrivals", href: '/men' }],
+      links: [{ text: "Men's New Arrivals", href: '/men/new-arrivals' }],
     },
     {
       id: 'spring-summer-men',

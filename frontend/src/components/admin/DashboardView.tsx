@@ -2,6 +2,7 @@ import {
   PackageIcon,
   ShoppingBag03Icon,
   Invoice03Icon,
+  Payment02Icon,
   QrCodeScanIcon,
   ArrowUp02Icon,
   ArrowDown02Icon,
@@ -112,6 +113,10 @@ export function DashboardView({
           <button className="admin-quicklink" type="button" onClick={() => onNavigate('orders')}>
             <AdminIcon icon={Invoice03Icon} size={18} />
             View Orders
+          </button>
+          <button className="admin-quicklink" type="button" onClick={() => onNavigate('payments')}>
+            <AdminIcon icon={Payment02Icon} size={18} />
+            Payment Health
           </button>
           <button className="admin-quicklink" type="button" onClick={() => onNavigate('bopis')}>
             <AdminIcon icon={QrCodeScanIcon} size={18} />

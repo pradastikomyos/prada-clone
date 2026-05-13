@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import QRCode from 'qrcode';
 import { BrandLogo } from '../components/ui/BrandLogo';
 import { isSupabaseConfigured } from '../lib/supabase';
-import { getOrderByInvoice } from '../services/commerce';
+import { getCheckoutResult, reconcileDokuPayment } from '../services/commerce';
 import type { CheckoutResultOrder } from '../services/commerce';
 
 const IDR = new Intl.NumberFormat('id-ID', {
@@ -102,6 +102,7 @@ export function CheckoutResultPage() {
   const [searchParams] = useSearchParams();
   const invoice = useMemo(() => searchParams.get('invoice'), [searchParams]);
   const [pollCount, setPollCount] = useState(0);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     document.title = 'Order Confirmation | Spark Stage';
@@ -109,11 +110,13 @@ export function CheckoutResultPage() {
 
   const orderQuery = useQuery({
     queryKey: ['checkout-result', invoice],
-    queryFn: () => getOrderByInvoice(invoice!),
+    queryFn: () => getCheckoutResult(invoice!),
     enabled: isSupabaseConfigured && Boolean(invoice),
     // Poll while status is still pending_payment, stop after max polls
     refetchInterval: (query) => {
-      const status = query.state.data?.status;
+      const status = query.state.data?.order?.status;
+      const kind = query.state.data?.kind;
+      if (kind === 'not_found' || kind === 'not_owner') return false;
       if (!status || status === 'pending_payment') {
         if (pollCount >= MAX_POLLS) return false;
         setPollCount((c) => c + 1);
@@ -124,12 +127,29 @@ export function CheckoutResultPage() {
     staleTime: 0,
   });
 
-  const order = orderQuery.data;
+  const reconcileMutation = useMutation({
+    mutationFn: () => reconcileDokuPayment({ invoice_number: invoice! }),
+    onSuccess: async () => {
+      setPollCount(0);
+      await queryClient.invalidateQueries({ queryKey: ['checkout-result', invoice] });
+      await orderQuery.refetch();
+    },
+  });
+
+  const result = orderQuery.data;
+  const order = result?.order ?? null;
+  const resultKind = result?.kind;
   const pickupCode = order?.pickup_codes?.[0];
   const isSuccess = order?.status === 'pending_pickup' || order?.status === 'picked_up';
   const isFailed = order?.status === 'cancelled' || order?.status === 'expired';
-  const isPending = !order || order.status === 'pending_payment';
+  const isPending = Boolean(
+    resultKind !== 'not_found' &&
+    resultKind !== 'not_owner' &&
+    (!order || order.status === 'pending_payment'),
+  );
   const isPollingExhausted = isPending && pollCount >= MAX_POLLS;
+  const isNotOwner = resultKind === 'not_owner';
+  const isNotFound = resultKind === 'not_found';
 
   if (!invoice) {
     return (
@@ -166,7 +186,7 @@ export function CheckoutResultPage() {
         )}
 
         {/* Polling — waiting for webhook */}
-        {!orderQuery.isLoading && isPending && !isPollingExhausted && (
+        {!orderQuery.isLoading && !orderQuery.isError && isPending && !isPollingExhausted && (
           <>
             <StatusIcon status="pending_payment" />
             <p className="checkout-result-eyebrow">Menunggu konfirmasi</p>
@@ -179,21 +199,61 @@ export function CheckoutResultPage() {
         )}
 
         {/* Polling exhausted */}
-        {!orderQuery.isLoading && isPending && isPollingExhausted && (
+        {!orderQuery.isLoading && !orderQuery.isError && isPending && isPollingExhausted && (
           <>
             <StatusIcon status="pending_payment" />
             <p className="checkout-result-eyebrow">Menunggu konfirmasi</p>
             <h1 className="checkout-result-title">Pembayaran belum terkonfirmasi</h1>
             <p className="checkout-result-body">
-              Pembayaran kamu sedang diproses. Simpan nomor invoice ini dan cek kembali dalam beberapa menit.
+              Pembayaran kamu mungkin masih diproses oleh bank atau DOKU. Kamu bisa meminta sistem mengecek
+              status langsung ke DOKU tanpa membagikan detail pembayaran.
+            </p>
+            <p className="checkout-result-invoice">Invoice: <strong>{invoice}</strong></p>
+            {reconcileMutation.data?.message ? (
+              <p className="checkout-result-status-note">{reconcileMutation.data.message}</p>
+            ) : null}
+            {reconcileMutation.error ? (
+              <p className="checkout-result-status-note checkout-result-status-note--error">
+                {reconcileMutation.error.message}
+              </p>
+            ) : null}
+            <button
+              type="button"
+              className="checkout-result-cta-secondary"
+              disabled={reconcileMutation.isPending}
+              onClick={() => reconcileMutation.mutate()}
+            >
+              {reconcileMutation.isPending ? 'Mengecek DOKU...' : 'Cek status ke DOKU'}
+            </button>
+            <button
+              type="button"
+              className="checkout-result-text-button"
+              onClick={() => { setPollCount(0); orderQuery.refetch(); }}
+            >
+              Cek ulang halaman
+            </button>
+          </>
+        )}
+
+        {/* Status lookup error */}
+        {!orderQuery.isLoading && orderQuery.isError && (
+          <>
+            <StatusIcon status="pending_payment" />
+            <p className="checkout-result-eyebrow">Status belum tersedia</p>
+            <h1 className="checkout-result-title">Belum bisa membaca status pesanan</h1>
+            <p className="checkout-result-body">
+              Sistem checkout belum bisa mengambil status invoice ini. Coba beberapa saat lagi.
+            </p>
+            <p className="checkout-result-status-note checkout-result-status-note--error">
+              {orderQuery.error.message}
             </p>
             <p className="checkout-result-invoice">Invoice: <strong>{invoice}</strong></p>
             <button
               type="button"
               className="checkout-result-cta-secondary"
-              onClick={() => { setPollCount(0); orderQuery.refetch(); }}
+              onClick={() => orderQuery.refetch()}
             >
-              Cek ulang status
+              Cek ulang
             </button>
           </>
         )}
@@ -274,7 +334,7 @@ export function CheckoutResultPage() {
         )}
 
         {/* Not found */}
-        {!orderQuery.isLoading && orderQuery.isFetched && !order && (
+        {!orderQuery.isLoading && orderQuery.isFetched && isNotFound && (
           <>
             <div className="checkout-result-icon checkout-result-icon--error">
               <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
@@ -285,7 +345,28 @@ export function CheckoutResultPage() {
             <p className="checkout-result-eyebrow">Tidak ditemukan</p>
             <h1 className="checkout-result-title">Pesanan tidak ditemukan</h1>
             <p className="checkout-result-body">
-              Invoice <strong>{invoice}</strong> tidak ditemukan. Pastikan link yang kamu buka sudah benar.
+              Invoice <strong>{invoice}</strong> tidak ditemukan atau belum tersedia untuk ditampilkan.
+              Pastikan link yang kamu buka sudah benar.
+            </p>
+            <Link to="/" className="checkout-result-cta">Kembali ke beranda</Link>
+          </>
+        )}
+
+        {/* RLS / ownership denied */}
+        {!orderQuery.isLoading && orderQuery.isFetched && isNotOwner && (
+          <>
+            <div className="checkout-result-icon checkout-result-icon--error">
+              <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                <circle cx="20" cy="20" r="20" fill="#e00" />
+                <path d="M20 10v14" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" />
+                <circle cx="20" cy="30" r="1.8" fill="#fff" />
+              </svg>
+            </div>
+            <p className="checkout-result-eyebrow">Akses terbatas</p>
+            <h1 className="checkout-result-title">Pesanan tidak terhubung ke akun ini</h1>
+            <p className="checkout-result-body">
+              Invoice <strong>{invoice}</strong> ada, tetapi hanya bisa dilihat oleh akun pembeli yang sesuai.
+              Masuk dengan akun yang dipakai saat checkout atau hubungi admin toko.
             </p>
             <Link to="/" className="checkout-result-cta">Kembali ke beranda</Link>
           </>

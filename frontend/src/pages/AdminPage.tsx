@@ -31,6 +31,9 @@ const InventorySection = lazy(() =>
 const OrdersSection = lazy(() =>
   import('./admin/OrdersSection').then((m) => ({ default: m.OrdersSection })),
 );
+const PaymentHealthSection = lazy(() =>
+  import('./admin/PaymentHealthSection').then((m) => ({ default: m.PaymentHealthSection })),
+);
 const BopisSection = lazy(() =>
   import('./admin/BopisSection').then((m) => ({ default: m.BopisSection })),
 );
@@ -226,6 +229,7 @@ export function AdminPage() {
           )}
           {tab === 'inventory' && <InventorySection isReady={isReady} />}
           {tab === 'orders' && <OrdersSection isReady={isReady} />}
+          {tab === 'payments' && <PaymentHealthSection isReady={isReady} />}
           {tab === 'bopis' && <BopisSection />}
           {tab === 'cms' && <CmsSection isReady={isReady} />}
           {tab === 'doku' && <DokuSection isReady={isReady} />}

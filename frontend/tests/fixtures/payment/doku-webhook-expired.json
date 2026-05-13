@@ -1,0 +1,12 @@
+{
+  "order": {
+    "invoice_number": "INV-PAYMENT-EXPIRED-001",
+    "amount": 899000
+  },
+  "transaction": {
+    "transaction_status": "EXPIRED"
+  },
+  "payment": {
+    "channel": "VIRTUAL_ACCOUNT_MANDIRI"
+  }
+}

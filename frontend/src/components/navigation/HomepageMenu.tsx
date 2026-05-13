@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { CloseIcon, SearchIcon } from '../ui/Icons';
 import { menuCategories, menuData } from '../../data/navigation';
 
@@ -7,6 +7,7 @@ export function HomepageMenu({ isOpen, onClose, onSearchClick }: { isOpen: boole
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const navigate = useNavigate();
   const sections = activeCategory ? menuData[activeCategory] : undefined;
 
   useEffect(() => {
@@ -57,6 +58,16 @@ export function HomepageMenu({ isOpen, onClose, onSearchClick }: { isOpen: boole
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [isOpen, onClose]);
 
+  /**
+   * Close the menu then navigate — SPA best practice so the menu
+   * always dismisses when the user picks a link.
+   */
+  const handleLinkClick = (href: string) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    onClose();
+    navigate(href);
+  };
+
   return (
     <div
       className={`mega-menu${isOpen ? ' active' : ''}${sections ? ' has-submenu' : ''}`}
@@ -65,8 +76,9 @@ export function HomepageMenu({ isOpen, onClose, onSearchClick }: { isOpen: boole
       aria-modal="true"
       aria-label="Navigation menu"
       ref={dialogRef}
+      onClick={onClose}
     >
-      <div className="mega-menu-body">
+      <div className="mega-menu-body" onClick={(e) => e.stopPropagation()}>
         <div className="mega-menu-left">
           <div className="mega-menu-topbar">
             <button className="mega-menu-close" id="menu-close" onClick={onClose} type="button" ref={closeButtonRef}>
@@ -103,7 +115,7 @@ export function HomepageMenu({ isOpen, onClose, onSearchClick }: { isOpen: boole
           <div className="mega-menu-utility">
           </div>
         </div>
-        <div className="mega-menu-right" id="mega-menu-right">
+        <div className="mega-menu-right" id="mega-menu-right" onClick={onClose}>
           {sections?.map((section, index) => (
             <div 
               className="mega-sub-section" 
@@ -115,7 +127,7 @@ export function HomepageMenu({ isOpen, onClose, onSearchClick }: { isOpen: boole
                 {section.links.map((link) => (
                   <li key={link.text}>
                     {link.href ? (
-                      <Link className="menu-link" to={link.href}>{link.text}</Link>
+                      <Link className="menu-link" to={link.href} onClick={handleLinkClick(link.href)}>{link.text}</Link>
                     ) : (
                       <button className="menu-link is-placeholder" type="button" aria-disabled="true" data-ui="placeholder">
                         {link.text}

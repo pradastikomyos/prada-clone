@@ -60,6 +60,9 @@ export function AdminSidebar({ email, totalStock, currentView, onChangeView, onA
         <button className={currentView === 'orders' ? 'is-current' : ''} type="button" onClick={() => onChangeView('orders')}>
           <span><AdminIcon icon={Invoice03Icon} size={18} /> Orders</span>
         </button>
+        <button className={currentView === 'payments' ? 'is-current' : ''} type="button" onClick={() => onChangeView('payments')}>
+          <span><AdminIcon icon={Payment02Icon} size={18} /> Payment Health</span>
+        </button>
         <button className={currentView === 'bopis' ? 'is-current' : ''} type="button" onClick={() => onChangeView('bopis')}>
           <span><AdminIcon icon={QrCodeScanIcon} size={18} /> BOPIS Verify</span>
         </button>

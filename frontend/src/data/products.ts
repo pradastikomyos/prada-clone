@@ -66,3 +66,37 @@ const menNewArrivalRows: Array<readonly [name: string, note: string, image: stri
 ];
 
 export const menNewArrivals: ListingProduct[] = menNewArrivalRows.map(([name, note, image]) => ({ name, note, image }));
+
+/**
+ * Men category products used by `MenPage`. Reuses images from
+ * `public/assets/reference/prada/men-new-arrivals/products/...`.
+ */
+export const menProducts = [
+  {
+    title: 'OUTERWEAR',
+    products: [
+      ['Suede bomber jacket', 'EUR 4,200', '/assets/reference/prada/men-new-arrivals/products/suede-bomber-jacket.jpg'],
+      ['Bull denim zipper shirt', 'EUR 1,350', '/assets/reference/prada/men-new-arrivals/products/bull-denim-zipper-shirt.jpg'],
+    ],
+  },
+  {
+    title: 'SHIRTS AND TOPS',
+    products: [
+      ['Striped cotton pique polo shirt', 'EUR 950', '/assets/reference/prada/men-new-arrivals/products/striped-cotton-pique-polo-shirt.jpg'],
+    ],
+  },
+  {
+    title: 'TROUSERS',
+    products: [
+      ['Old denim five-pocket jeans', 'EUR 1,100', '/assets/reference/prada/men-new-arrivals/products/old-denim-five-pocket-jeans.jpg'],
+    ],
+  },
+  {
+    title: 'BAGS AND ACCESSORIES',
+    products: [
+      ['Prada Route canvas and leather tote bag', 'EUR 2,600', '/assets/reference/prada/men-new-arrivals/products/prada-route-canvas-leather-tote-bag.jpg'],
+      ['Prada Explore leather shoulder bag', 'EUR 2,100', '/assets/reference/prada/men-new-arrivals/products/prada-explore-leather-shoulder-bag.jpg'],
+      ['Sunglasses with the iconic metal plaque', 'EUR 380', '/assets/reference/prada/men-new-arrivals/products/sunglasses-iconic-metal-plaque.jpg'],
+    ],
+  },
+];

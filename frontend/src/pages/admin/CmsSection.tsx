@@ -87,28 +87,38 @@ export function CmsSection({ isReady }: CmsSectionProps) {
     <section className="admin-detail-pane">
       <AdminDetailTop />
 
-      <div className="admin-panel">
+      <div className="admin-detail-card" style={{ margin: '0 24px' }}>
         <p className="admin-eyebrow">CMS</p>
-        <h2 className="admin-section-title">Site Assets</h2>
-        <p className="admin-muted" style={{ marginBottom: '24px' }}>
+        <h2 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 500 }}>Site Assets</h2>
+        <p className="admin-muted" style={{ marginBottom: 0, maxWidth: 520 }}>
           Manage hero videos, mosaic images, and editorial assets displayed on the storefront.
         </p>
+      </div>
 
-        {assetsQuery.isLoading && (
-          <p className="admin-muted">Loading assets…</p>
-        )}
+      {assetsQuery.isLoading && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 24px' }}>
+          <span className="cms-spinner" />
+          <p className="admin-muted" style={{ margin: 0 }}>Loading assets…</p>
+        </div>
+      )}
 
-        {assetsQuery.isError && (
-          <p style={{ color: 'var(--color-error, #ef4444)' }}>
+      {assetsQuery.isError && (
+        <div className="admin-detail-card" style={{ margin: '0 24px', borderColor: '#fecaca', background: '#fef2f2' }}>
+          <p style={{ margin: 0, color: '#b91c1c', fontSize: 13 }}>
             Failed to load assets. Please refresh.
           </p>
-        )}
+        </div>
+      )}
 
-        {Array.from(grouped.entries()).map(([prefix, assets]) => (
-          <div key={prefix} className="admin-cms-group">
-            <h3 className="admin-cms-group-title">
+      {Array.from(grouped.entries()).map(([prefix, assets]) => (
+        <div key={prefix} style={{ padding: '0 24px' }}>
+          <div className="cms-group-header">
+            <span className="cms-group-accent" />
+            <h3 className="cms-group-title">
               {GROUP_LABELS[prefix] ?? prefix}
             </h3>
+          </div>
+          <div className="cms-asset-grid">
             {assets.map((asset) => (
               <CmsAssetField
                 key={asset.slot}
@@ -124,8 +134,9 @@ export function CmsSection({ isReady }: CmsSectionProps) {
               />
             ))}
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
     </section>
   );
 }
+

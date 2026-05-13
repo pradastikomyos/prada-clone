@@ -1,0 +1,18 @@
+{
+  "response": {
+    "headers": {
+      "requestId": "f8a3e54d-4d74-4d30-87e7-7f24fe19ed01"
+    },
+    "order": {
+      "invoice_number": "INV-PAYMENT-PAID-001",
+      "amount": 1299000
+    },
+    "transaction": {
+      "status": "SETTLEMENT",
+      "date": "2026-05-13T02:16:00Z"
+    },
+    "payment": {
+      "channel": "VIRTUAL_ACCOUNT_BCA"
+    }
+  }
+}

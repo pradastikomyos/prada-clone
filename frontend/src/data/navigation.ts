@@ -11,14 +11,14 @@ export const menuData: Record<string, MenuSection[]> = {
     {
       header: 'FOR HER',
       links: [
-        { text: "Women's New Arrivals", href: '/new-arrivals' },
+        { text: "Women's New Arrivals", href: '/women/new-arrivals' },
         { text: 'Spring Summer 2026', href: '/women' },
       ],
     },
     {
       header: 'FOR HIM',
       links: [
-        { text: "Men's New Arrivals", href: '/men' },
+        { text: "Men's New Arrivals", href: '/men/new-arrivals' },
         { text: 'Spring Summer 2026', href: '/men' },
       ],
     },

@@ -21,6 +21,9 @@ const ListingPageMen = lazy(() =>
     default: () => <m.ListingPage kind="men" />,
   })),
 );
+const MenPage = lazy(() =>
+  import('../pages/MenPage').then((m) => ({ default: m.MenPage })),
+);
 const ProductPage = lazy(() =>
   import('../pages/ProductPage').then((m) => ({ default: m.ProductPage })),
 );
@@ -55,6 +58,10 @@ export const router = createBrowserRouter([
       },
       {
         path: '/new-arrivals',
+        element: <Navigate to="/women/new-arrivals" replace />,
+      },
+      {
+        path: '/women/new-arrivals',
         element: (
           <Suspense fallback={<PageFallback />}>
             <ListingPageWomen />
@@ -62,10 +69,18 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: '/men',
+        path: '/men/new-arrivals',
         element: (
           <Suspense fallback={<PageFallback />}>
             <ListingPageMen />
+          </Suspense>
+        ),
+      },
+      {
+        path: '/men',
+        element: (
+          <Suspense fallback={<PageFallback />}>
+            <MenPage />
           </Suspense>
         ),
       },

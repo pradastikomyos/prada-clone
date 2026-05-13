@@ -1,0 +1,16 @@
+{
+  "service": {
+    "id": "CHECKOUT"
+  },
+  "order": {
+    "invoice_number": "INV-PAYMENT-PAID-001",
+    "amount": 1299000
+  },
+  "transaction": {
+    "status": "SUCCESS",
+    "date": "2026-05-13T02:15:00Z"
+  },
+  "payment": {
+    "channel": "VIRTUAL_ACCOUNT_BCA"
+  }
+}

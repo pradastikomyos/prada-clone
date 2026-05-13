@@ -34,6 +34,25 @@ function requiredEnv(name: string) {
   return value;
 }
 
+function getBearerToken(req: Request) {
+  const authorization = req.headers.get('Authorization') ?? '';
+  const match = authorization.match(/^Bearer\s+(.+)$/i);
+  return match?.[1] ?? null;
+}
+
+async function getAuthenticatedUserId(req: Request, supabaseUrl: string, serviceRoleKey: string) {
+  const token = getBearerToken(req);
+  if (!token || token === Deno.env.get('SUPABASE_ANON_KEY')) return null;
+
+  const authClient = createClient(supabaseUrl, serviceRoleKey, {
+    auth: { persistSession: false },
+  });
+  const { data, error } = await authClient.auth.getUser(token);
+
+  if (error || !data.user) return null;
+  return data.user.id;
+}
+
 function makeInvoiceNumber() {
   const suffix = crypto.randomUUID().replaceAll('-', '').slice(0, 8).toUpperCase();
   return `INV${Date.now()}${suffix}`.slice(0, 30);
@@ -70,11 +89,11 @@ async function dokuHeaders(body: string, requestTarget: string) {
     `Digest:${digest}`,
   ].join('\n');
 
-  return {
-    'Client-Id': clientId,
-    'Request-Id': requestId,
-    'Request-Timestamp': requestTimestamp,
-    Signature: await hmacSignature(component, secretKey),
+    return {
+      'Client-Id': clientId,
+      'Request-Id': requestId,
+      'Request-Timestamp': requestTimestamp,
+      Signature: await hmacSignature(component, secretKey),
   };
 }
 
@@ -90,7 +109,12 @@ Deno.serve(async (req) => {
     const overrideNotificationUrl = Deno.env.get('DOKU_NOTIFICATION_URL');
 
     const supabase = createClient(supabaseUrl, serviceRoleKey);
+    const userId = await getAuthenticatedUserId(req, supabaseUrl, serviceRoleKey);
     const payload = (await req.json()) as CheckoutRequest;
+
+    if (!userId) {
+      return jsonResponse({ error: 'You must be logged in before checkout' }, 401);
+    }
 
     if (!payload.customer?.name?.trim()) {
       return jsonResponse({ error: 'Customer name is required' }, 400);
@@ -158,26 +182,19 @@ Deno.serve(async (req) => {
     const invoiceNumber = makeInvoiceNumber();
 
     const { data: order, error: orderError } = await supabase
-      .from('orders')
-      .insert({
-        invoice_number: invoiceNumber,
+      .rpc('create_pending_doku_order', {
+        requester_id: userId,
+        target_invoice_number: invoiceNumber,
         customer_name: payload.customer.name.trim(),
         customer_email: payload.customer.email?.trim() || null,
         customer_phone: payload.customer.phone?.trim() || null,
+        line_items: lineItems,
         total_amount_idr: totalAmount,
-        status: 'pending_payment',
-        payment_status: 'pending',
       })
-      .select('id, invoice_number')
       .single();
 
     if (orderError) throw orderError;
-
-    const { error: orderItemsError } = await supabase
-      .from('order_items')
-      .insert(lineItems.map((item) => ({ ...item, order_id: order.id })));
-
-    if (orderItemsError) throw orderItemsError;
+    if (!order?.order_id) throw new Error('Order creation did not return an order id');
 
     const dokuRequestTarget = '/checkout/v1/payment';
     const dokuBody = JSON.stringify({
@@ -223,12 +240,17 @@ Deno.serve(async (req) => {
 
     if (!dokuResponse.ok) {
       await supabase.from('payment_attempts').insert({
-        order_id: order.id,
+        order_id: order.order_id,
         request_id: dokuJson?.response?.headers?.requestId ?? null,
         status: 'failed',
         amount_idr: totalAmount,
         raw_payload: dokuJson,
       });
+      await supabase.rpc('release_inventory_reservations_for_order', { target_order_id: order.order_id });
+      await supabase
+        .from('orders')
+        .update({ status: 'cancelled', payment_status: 'failed' })
+        .eq('id', order.order_id);
       return jsonResponse({ error: 'DOKU checkout creation failed', detail: dokuJson }, 502);
     }
 
@@ -236,11 +258,16 @@ Deno.serve(async (req) => {
     const sessionId = dokuJson?.response?.order?.session_id;
 
     if (!paymentUrl) {
+      await supabase.rpc('release_inventory_reservations_for_order', { target_order_id: order.order_id });
+      await supabase
+        .from('orders')
+        .update({ status: 'cancelled', payment_status: 'failed' })
+        .eq('id', order.order_id);
       return jsonResponse({ error: 'DOKU did not return payment URL', detail: dokuJson }, 502);
     }
 
     await supabase.from('payment_attempts').insert({
-      order_id: order.id,
+      order_id: order.order_id,
       provider_reference: sessionId ?? null,
       request_id: dokuJson?.response?.headers?.requestId ?? null,
       status: 'pending',
@@ -254,10 +281,10 @@ Deno.serve(async (req) => {
         doku_payment_url: paymentUrl,
         doku_session_id: sessionId ?? null,
       })
-      .eq('id', order.id);
+      .eq('id', order.order_id);
 
     return jsonResponse({
-      order_id: order.id,
+      order_id: order.order_id,
       invoice_number: invoiceNumber,
       payment_url: paymentUrl,
       amount_idr: totalAmount,
