@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom';
 import { HomepageMenu } from '../navigation/HomepageMenu';
 import { SearchOverlay } from '../navigation/SearchOverlay';
 import { CartDrawer } from '../cart/CartDrawer';
+import { SiteFooter } from './SiteFooter';
 import { useUIStore } from '../../store/uiStore';
 
 /**
@@ -33,6 +34,7 @@ export function RootLayout() {
       <CartDrawer />
 
       <Outlet />
+      <SiteFooter />
     </>
   );
 }

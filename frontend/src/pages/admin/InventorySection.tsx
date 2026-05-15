@@ -124,6 +124,7 @@ export function InventorySection({ isReady }: InventorySectionProps) {
           onStatusChange={(productId, status) =>
             statusMutation.mutate({ productId, status })
           }
+          onImagesChange={() => queryClient.invalidateQueries({ queryKey: ['admin-products'] })}
           onBack={() => setSelectedProductId(null)}
           formatCurrency={(v) => currency.format(v)}
         />

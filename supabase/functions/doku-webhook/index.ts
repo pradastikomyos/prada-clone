@@ -13,6 +13,33 @@ function jsonResponse(body: unknown, status = 200) {
   });
 }
 
+function normalizeUnknownError(error: unknown, fallbackMessage: string) {
+  if (error instanceof Error) {
+    return {
+      message: error.message,
+      name: error.name,
+      stack: error.stack,
+    };
+  }
+
+  if (error && typeof error === 'object') {
+    const errorRecord = error as Record<string, unknown>;
+    return {
+      message: typeof errorRecord.message === 'string' ? errorRecord.message : fallbackMessage,
+      code: errorRecord.code,
+      details: errorRecord.details,
+      hint: errorRecord.hint,
+      phase: errorRecord.phase,
+      raw: errorRecord,
+    };
+  }
+
+  return {
+    message: typeof error === 'string' ? error : fallbackMessage,
+    raw: error,
+  };
+}
+
 function textResponse(body: string, status = 200) {
   return new Response(body, {
     status,
@@ -182,7 +209,7 @@ Deno.serve(async (req) => {
       amount_idr: extractAmount(payload),
     });
 
-    if (error) throw error;
+    if (error) throw { phase: 'process_doku_payment_event', ...error };
 
     const result = Array.isArray(data) ? data[0] : data;
 
@@ -192,7 +219,8 @@ Deno.serve(async (req) => {
 
     return jsonResponse({ ok: true, status: paymentStatus, result });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unexpected webhook error';
-    return jsonResponse({ error: message }, 500);
+    const normalizedError = normalizeUnknownError(error, 'Unexpected webhook error');
+    console.error('doku-webhook error:', JSON.stringify(normalizedError));
+    return jsonResponse({ error: normalizedError.message, detail: normalizedError }, 500);
   }
 });

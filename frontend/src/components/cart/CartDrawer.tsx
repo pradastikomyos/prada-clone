@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Minus, Plus, Trash, X } from '@phosphor-icons/react';
 import { useUIStore } from '../../store/uiStore';
 import { isSupabaseConfigured, supabase } from '../../lib/supabase';
@@ -11,6 +11,7 @@ import {
   updateCartItemQuantity,
 } from '../../services/cart';
 import { createDokuCheckout } from '../../services/commerce';
+import { loadDokuCheckoutScript, openDokuCheckout } from '../../utils/dokuCheckout';
 import type { CartItem } from '../../types/commerce';
 
 const IDR = new Intl.NumberFormat('id-ID', {
@@ -18,41 +19,6 @@ const IDR = new Intl.NumberFormat('id-ID', {
   currency: 'IDR',
   maximumFractionDigits: 0,
 });
-
-const DOKU_POPUP_WIDTH = 520;
-const DOKU_POPUP_HEIGHT = 760;
-
-function openDokuCheckoutPopup() {
-  const left = Math.max(0, window.screenX + (window.outerWidth - DOKU_POPUP_WIDTH) / 2);
-  const top = Math.max(0, window.screenY + (window.outerHeight - DOKU_POPUP_HEIGHT) / 2);
-  const features = [
-    'popup=yes',
-    `width=${DOKU_POPUP_WIDTH}`,
-    `height=${DOKU_POPUP_HEIGHT}`,
-    `left=${Math.round(left)}`,
-    `top=${Math.round(top)}`,
-    'resizable=yes',
-    'scrollbars=yes',
-  ].join(',');
-
-  const popup = window.open('', 'spark-stage-doku-checkout', features);
-
-  if (popup) {
-    popup.document.title = 'Opening secure checkout';
-    popup.document.body.innerHTML = `
-      <main style="min-height:100vh;display:grid;place-items:center;font-family:Inter,Arial,sans-serif;color:#111;text-align:center;padding:32px;">
-        <div>
-          <p style="font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#777;margin:0 0 16px;">Secure checkout</p>
-          <h1 style="font-size:22px;font-weight:500;margin:0 0 8px;">Opening DOKU payment</h1>
-          <p style="font-size:14px;line-height:1.6;color:#555;margin:0;">Please keep this window open.</p>
-        </div>
-      </main>
-    `;
-    popup.focus();
-  }
-
-  return popup;
-}
 
 type AuthState = {
   userId: string | null;
@@ -94,6 +60,7 @@ function useAuthState(): AuthState {
 export function CartDrawer() {
   const cartDrawerOpen = useUIStore((state) => state.cartDrawerOpen);
   const setCartDrawerOpen = useUIStore((state) => state.setCartDrawerOpen);
+  const navigate = useNavigate();
   const { userId, email } = useAuthState();
   const queryClient = useQueryClient();
 
@@ -156,8 +123,8 @@ export function CartDrawer() {
     if (!items.length || !email) return;
     setCheckoutError(null);
     setIsCheckingOut(true);
-    const paymentPopup = openDokuCheckoutPopup();
     try {
+      await loadDokuCheckoutScript();
       const result = await createDokuCheckout({
         customer: {
           name: email ?? 'Customer',
@@ -171,18 +138,19 @@ export function CartDrawer() {
         })),
       });
       if (result?.payment_url) {
-        if (paymentPopup && !paymentPopup.closed) {
-          paymentPopup.location.replace(result.payment_url);
-          setCartDrawerOpen(false);
-        } else {
-          window.open(result.payment_url, '_blank', 'popup=yes,width=520,height=760,scrollbars=yes,resizable=yes');
-        }
+        // Navigate to the result page FIRST so it's ready in the background,
+        // then open the DOKU SDK overlay on top of it.
+        // If navigate is called after openDokuCheckout, the SDK overlay
+        // detects the page change and closes itself immediately.
+        setCartDrawerOpen(false);
+        navigate(`/checkout-result?invoice=${encodeURIComponent(result.invoice_number)}&pending=1`);
+        // Small tick to let React commit the navigation before SDK overlay mounts
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        openDokuCheckout(result.payment_url);
         return;
       }
-      paymentPopup?.close();
       setCheckoutError('Checkout did not return a payment URL.');
     } catch (error) {
-      paymentPopup?.close();
       setCheckoutError(error instanceof Error ? error.message : 'Checkout failed.');
     } finally {
       setIsCheckingOut(false);

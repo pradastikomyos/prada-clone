@@ -1,0 +1,3 @@
+-- Superseded by 20260513110000_fix_payment_event_digest_ambiguity.sql
+-- This migration was applied remotely as an intermediate step.
+-- The final correct version of process_doku_payment_event is in the file above.

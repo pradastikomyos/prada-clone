@@ -39,7 +39,7 @@ export function PickupVerificationCard({
   orderDetail,
   isLoadingOrder,
 }: PickupVerificationCardProps) {
-  const canVerify = orderDetail !== null && orderDetail.status === 'pending_pickup'
+  const canPreview = orderDetail !== null && orderDetail.status === 'pending_pickup'
 
   return (
     <div className="admin-bopis-container">
@@ -81,9 +81,9 @@ export function PickupVerificationCard({
               onChange={(event) => onPickupCodeChange(event.target.value.toUpperCase())}
               placeholder="Contoh: PRX-9C1-984"
             />
-            {!canVerify && (
+            {!canPreview && (
               <button type="submit" disabled={isPending || !pickupCode}>
-                {isPending ? 'Memverifikasi...' : 'Verifikasi'}
+                {isPending ? 'Memuat...' : 'Cari Order'}
               </button>
             )}
           </div>
@@ -168,18 +168,18 @@ export function PickupVerificationCard({
             </div>
           ) : null}
 
-          {canVerify ? (
+          {canPreview ? (
             <button
               type="button"
               className="admin-bopis-verify-btn"
               disabled={isPending}
               onClick={(e) => {
-                e.preventDefault()
+                e.preventDefault();
                 onSubmit(e as unknown as FormEvent)
               }}
             >
               <AdminIcon icon={CheckmarkCircle01Icon} size={18} />
-              {isPending ? 'Memverifikasi...' : 'Verify & Complete'}
+              {isPending ? 'Memuat...' : 'Buka Preview'}
             </button>
           ) : orderDetail.status === 'picked_up' ? (
             <p className="admin-success" style={{ marginTop: '12px', textAlign: 'center' }}>

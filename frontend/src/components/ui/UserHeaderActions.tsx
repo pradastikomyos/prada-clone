@@ -49,6 +49,12 @@ export function UserHeaderActions({ className }: UserHeaderActionsProps) {
           </Link>
         )}
 
+        {role !== 'admin' && (
+          <Link to="/my-orders" className="user-header-admin-link" aria-label="Lihat pesanan saya" title="Pesanan Saya">
+            <span className="user-header-admin-label">Pesanan Saya</span>
+          </Link>
+        )}
+
         <button
           type="button"
           className="user-header-signout"

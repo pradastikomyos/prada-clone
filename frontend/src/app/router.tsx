@@ -33,6 +33,12 @@ const AdminPage = lazy(() =>
 const CheckoutResultPage = lazy(() =>
   import('../pages/CheckoutResultPage').then((m) => ({ default: m.CheckoutResultPage })),
 );
+const MyOrdersPage = lazy(() =>
+  import('../pages/MyOrdersPage').then((m) => ({ default: m.MyOrdersPage })),
+);
+const MyOrderDetailPage = lazy(() =>
+  import('../pages/MyOrderDetailPage').then((m) => ({ default: m.MyOrderDetailPage })),
+);
 
 function PageFallback() {
   return <div className="page-fallback" aria-hidden="true" />;
@@ -98,6 +104,26 @@ export const router = createBrowserRouter([
           <Suspense fallback={<PageFallback />}>
             <CheckoutResultPage />
           </Suspense>
+        ),
+      },
+      {
+        path: '/my-orders',
+        element: (
+          <ProtectedRoute>
+            <Suspense fallback={<PageFallback />}>
+              <MyOrdersPage />
+            </Suspense>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/my-orders/:invoice',
+        element: (
+          <ProtectedRoute>
+            <Suspense fallback={<PageFallback />}>
+              <MyOrderDetailPage />
+            </Suspense>
+          </ProtectedRoute>
         ),
       },
 

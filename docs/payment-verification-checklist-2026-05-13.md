@@ -1,65 +1,67 @@
 # Payment Verification Checklist
 
-Date: 2026-05-13
+Date: 2026-05-13 (updated 2026-05-14)
 
-Scope: DOKU checkout auth, webhook payload mapping, future reconcile/check-status behavior, and checkout result visibility risks from `docs/ecommerce-architecture-gap-analysis-2026-05-13.md`.
+Scope: DOKU checkout auth, webhook payload mapping, reconcile/check-status behavior, and checkout result visibility.
 
 ## Current Deployment Status
 
-- Remote migrations are synced through `20260513010000_payment_hardening.sql`.
-- `create-doku-checkout` is deployed with authenticated order ownership and inventory reservation support.
-- `doku-webhook` is deployed with `process_doku_payment_event` event processing.
-- `get-checkout-result` is deployed for customer-safe result lookup.
-- `reconcile-doku-payment` is deployed for owner/admin-triggered DOKU Check Status reconciliation.
+- Remote migrations synced through `20260513110000_fix_payment_event_digest_ambiguity.sql`.
+- `create-doku-checkout` deployed — authenticated order ownership + inventory reservation.
+- `doku-webhook` deployed — signature verify + `process_doku_payment_event`.
+- `get-checkout-result` deployed — customer-safe RLS result lookup.
+- `reconcile-doku-payment` deployed v5 — service-role bypass, normalized error detail, phase tagging.
+- `process_doku_payment_event` fixed — `extensions.digest()` schema qualification + `ON CONFLICT ON CONSTRAINT` (no more ambiguous column reference).
 
-## Automated Checks
+## ✅ Verified End-to-End (14 Mei 2026)
 
-Run from `frontend`:
+Full sandbox flow confirmed working:
 
-```bash
-npm run test:e2e -- payment-contract.spec.js
-```
+1. Login sebagai `pelanggan@gmail.com`
+2. Add to cart → checkout → DOKU hosted page (BCA VA)
+3. Bayar di DOKU sandbox simulator
+4. Redirect ke `/checkout-result?invoice=...`
+5. Halaman otomatis hijau dalam ~12 detik (auto-reconcile)
+6. Animated green checkmark, "Payment Successful", pickup code, order summary tampil
 
-This contract spec verifies:
+**Bukti**: `INV1778744188922D3BD5F59` — status `pending_pickup`, payment `paid`, pickup code generated.
 
-- `create-doku-checkout` has a bearer-token auth path, rejects the anon key/no user, and checks auth before inserting into `orders`.
-- `doku-webhook` still reads known DOKU invoice/status shapes used by the fixtures.
-- Webhook fixtures normalize `SUCCESS`, `EXPIRED`, and `CANCELED` to the expected local payment/order states.
-- Check-status fixtures use the same invoice/status/request-id contract expected by a future `reconcile-doku-payment` function.
-- Reconcile source is contract-checked now that `supabase/functions/reconcile-doku-payment/index.ts` exists.
+## Known Behavior
 
-Fixtures live in `frontend/tests/fixtures/payment`.
+- **Webhook vs reconcile**: Webhook dari DOKU dikirim tapi sebelumnya selalu gagal karena bug `digest()`. Setelah fix, webhook seharusnya langsung sukses. Auto-reconcile di frontend (~12 detik) adalah fallback kalau webhook delay/miss.
+- **Idempotency**: Kalau DOKU response identik (timestamp sama), idempotency key sama → function return early. Untuk force re-process, gunakan `event_idempotency_key` custom.
+- **Append-only `payment_events`**: Trigger `prevent_payment_event_mutation` blokir DELETE dan UPDATE. Untuk reset testing, disable trigger dulu.
 
-## Manual Sandbox Verification
+## Manual Sandbox Verification Checklist
 
-1. Authenticate as a storefront customer.
-2. Add an active product variant with enough stock to the cart.
-3. Start checkout and confirm the DOKU popup opens.
-4. Confirm checkout creation fails with HTTP `401` and `You must be logged in before checkout` when the function is invoked without a real user token.
-5. Complete payment in the DOKU sandbox simulator.
-6. Confirm the DOKU HTTP Notification reaches the deployed `doku-webhook` URL, not only the browser redirect.
-7. Confirm the matching `orders.invoice_number` moves from `pending_payment` to the paid pickup-ready state and has a pickup code.
-8. Replay the same paid notification and confirm no duplicate pickup code or duplicate business side effect occurs.
-9. Simulate an expired payment and confirm `orders.status = expired` and `payment_status = expired`.
-10. Open `/checkout-result?invoice=<invoice>` as the owning user and confirm the paid/pending/expired state is clear.
-11. Open the same result URL while logged out or as another user and record whether the UI distinguishes RLS-denied from truly missing.
+- [x] Authenticate as storefront customer
+- [x] Add active product variant with stock to cart
+- [x] Start checkout — DOKU hosted page opens
+- [x] Checkout creation fails with 401 without real user token
+- [x] Complete payment in DOKU sandbox simulator
+- [ ] Confirm DOKU HTTP Notification reaches `doku-webhook` directly (without reconcile fallback)
+- [x] `orders.invoice_number` moves from `pending_payment` to `pending_pickup` with pickup code
+- [ ] Replay same paid notification — confirm no duplicate pickup code
+- [ ] Simulate expired payment — confirm `orders.status = expired`
+- [x] `/checkout-result?invoice=<invoice>` as owning user shows paid state clearly
+- [ ] Same URL logged out or as different user — confirm RLS-denied vs missing distinction
 
-## Reconcile Function Expectations
+## Reconcile Function — Verified Behavior
 
-When `reconcile-doku-payment` is added, it should be verified with the check-status fixtures and a live sandbox invoice:
-
-- Requires authenticated admin or a server-owned trusted caller.
-- Calls DOKU Check Status by `order.invoice_number` or request ID.
-- Normalizes DOKU status using the same contract as webhook notifications.
-- Reuses the same paid activation path as `doku-webhook`.
-- Stores raw check-status payloads without overwriting the original checkout attempt payload.
-- Treats repeated paid reconciliation as idempotent.
+- ✅ Accepts service-role JWT (system/operator recovery)
+- ✅ Accepts admin user JWT
+- ✅ Accepts owning customer JWT
+- ✅ Rejects anon key / unauthenticated
+- ✅ Rejects non-owner non-admin user (403)
+- ✅ Calls DOKU Check Status by invoice number
+- ✅ Normalizes DOKU SUCCESS → `paid`, maps to `process_doku_payment_event`
+- ✅ Idempotent — repeated paid reconciliation does not duplicate pickup codes
+- ✅ Returns full order detail including pickup code on success
 
 ## Deployment Health Checks
 
-- `DOKU_NOTIFICATION_URL` is present in Supabase secrets.
-- DOKU Back Office notification URL path matches the deployed webhook path.
-- `GET` or `HEAD` to the webhook URL returns `200`.
-- A signed sandbox notification with the expected `Client-Id`, `Request-Id`, `Request-Timestamp`, and `Signature` is accepted.
-- An invalid signed notification returns `401`.
-- A notification with no DOKU signature headers returns `CONTINUE` for DOKU path validation.
+- `DOKU_NOTIFICATION_URL` set in Supabase secrets → `https://xyhdnprncjvhtdfyovpx.functions.supabase.co/doku-webhook`
+- `GET` to webhook URL returns `200` ✅
+- Signed sandbox notification accepted ✅
+- Invalid signature returns `401` ✅
+- No DOKU signature headers returns `CONTINUE` ✅

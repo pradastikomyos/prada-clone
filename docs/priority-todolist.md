@@ -12,6 +12,18 @@ Dokumen ini memetakan sisa pekerjaan setelah frontend dipindah ke React data-dri
   - Status: homepage menu sudah bisa close dengan `Escape`, focus masuk ke tombol Close, focus dikembalikan ke tombol Menu, dan kategori menu memakai native `button`.
   - Area: `frontend/src/App.tsx`, `frontend/style.css`.
 
+- [x] DOKU payment flow end-to-end.
+  - Status: ✅ FULLY WORKING per 14 Mei 2026. Order masuk → BCA VA → redirect → halaman hijau otomatis ~12 detik. Pickup code generated.
+  - Fix: `extensions.digest()` schema qualification + `ON CONFLICT ON CONSTRAINT` di `process_doku_payment_event`. Auto-reconcile di `CheckoutResultPage` setelah 3 polls.
+
+- [ ] Konfirmasi webhook DOKU langsung sukses (tanpa fallback reconcile).
+  - Alasan: semua test sejauh ini pakai auto-reconcile sebagai fallback. Perlu verifikasi webhook path murni.
+  - Area: `supabase/functions/doku-webhook`, DOKU Back Office notification URL.
+
+- [ ] Deploy semua fix ke GitHub + Vercel.
+  - Alasan: semua fix 13–14 Mei masih di local/Supabase, belum di-push ke GitHub dan belum di-deploy ke Vercel production.
+  - Area: `git add -A && git commit && git push`, Vercel redeploy.
+
 - [ ] Hilangkan hotlink asset dan font yang masih bergantung ke domain eksternal.
   - Alasan: reliabilitas lokal masih bergantung ke `www.prada.com`, font remote, dan image remote.
   - Area: `frontend/src/App.tsx`, `frontend/style.css`, `frontend/shop.css`, `frontend/login.css`, `frontend/public/assets/`.

@@ -15,6 +15,33 @@ function jsonResponse(body: unknown, status = 200) {
   });
 }
 
+function normalizeUnknownError(error: unknown, fallbackMessage: string) {
+  if (error instanceof Error) {
+    return {
+      message: error.message,
+      name: error.name,
+      stack: error.stack,
+    };
+  }
+
+  if (error && typeof error === 'object') {
+    const errorRecord = error as Record<string, unknown>;
+    return {
+      message: typeof errorRecord.message === 'string' ? errorRecord.message : fallbackMessage,
+      code: errorRecord.code,
+      details: errorRecord.details,
+      hint: errorRecord.hint,
+      phase: errorRecord.phase,
+      raw: errorRecord,
+    };
+  }
+
+  return {
+    message: typeof error === 'string' ? error : fallbackMessage,
+    raw: error,
+  };
+}
+
 function requiredEnv(name: string) {
   const value = Deno.env.get(name);
   if (!value) throw new Error(`Missing environment variable: ${name}`);
@@ -135,17 +162,39 @@ function extractProviderReference(payload: Record<string, unknown>) {
   ) as string | null;
 }
 
+function decodeJwtRole(token: string): string | null {
+  try {
+    const [, payloadPart] = token.split('.');
+    if (!payloadPart) return null;
+    // base64url -> base64
+    const base64 = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
+    const decoded = atob(padded);
+    const claims = JSON.parse(decoded) as { role?: string };
+    return claims?.role ?? null;
+  } catch {
+    return null;
+  }
+}
+
 async function getCaller(req: Request, supabaseUrl: string, serviceRoleKey: string) {
   const token = getBearerToken(req);
   if (!token || token === Deno.env.get('SUPABASE_ANON_KEY')) {
-    return { userId: null, isAdmin: false };
+    return { userId: null, isAdmin: false, isSystem: false };
+  }
+
+  // System caller: trusted server-to-server invocation with service role key.
+  // Match either the env-injected key or the JWT role claim, since the env
+  // var can drift from the live key after a rotation.
+  if (token === serviceRoleKey || decodeJwtRole(token) === 'service_role') {
+    return { userId: null, isAdmin: true, isSystem: true };
   }
 
   const client = createClient(supabaseUrl, serviceRoleKey, {
     auth: { persistSession: false },
   });
   const { data, error } = await client.auth.getUser(token);
-  if (error || !data.user) return { userId: null, isAdmin: false };
+  if (error || !data.user) return { userId: null, isAdmin: false, isSystem: false };
 
   const { data: profile } = await client
     .from('profiles')
@@ -153,7 +202,11 @@ async function getCaller(req: Request, supabaseUrl: string, serviceRoleKey: stri
     .eq('id', data.user.id)
     .maybeSingle();
 
-  return { userId: data.user.id, isAdmin: profile?.role === 'admin' };
+  return {
+    userId: data.user.id,
+    isAdmin: profile?.role === 'admin',
+    isSystem: false,
+  };
 }
 
 Deno.serve(async (req) => {
@@ -178,7 +231,7 @@ Deno.serve(async (req) => {
 
     if (orderError) throw orderError;
     if (!order) return jsonResponse({ error: 'Order not found for invoice' }, 404);
-    if (!caller.userId || (!caller.isAdmin && order.user_id !== caller.userId)) {
+    if (!caller.isSystem && (!caller.userId || (!caller.isAdmin && order.user_id !== caller.userId))) {
       return jsonResponse({ error: 'This invoice belongs to a different account' }, 403);
     }
 
@@ -224,7 +277,7 @@ Deno.serve(async (req) => {
       amount_idr: extractAmount(dokuJson),
     });
 
-    if (processError) throw processError;
+    if (processError) throw { phase: 'process_doku_payment_event', ...processError };
 
     const { data: updatedOrder } = await supabase
       .from('orders')
@@ -261,7 +314,8 @@ Deno.serve(async (req) => {
       raw: dokuJson,
     }, result?.processing_status === 'failed' ? 500 : 200);
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unexpected reconciliation error';
-    return jsonResponse({ error: message }, 500);
+    const normalizedError = normalizeUnknownError(error, 'Unexpected reconciliation error');
+    console.error('reconcile-doku-payment error:', JSON.stringify(normalizedError));
+    return jsonResponse({ error: normalizedError.message, detail: normalizedError }, 500);
   }
 });

@@ -1,15 +1,16 @@
 import {
   Add01Icon,
-  ArrowDown01Icon,
   DashboardSquare03Icon,
   ImageAdd02Icon,
   Invoice03Icon,
+  LayersLogoIcon,
   Logout03Icon,
   PackageIcon,
   Payment02Icon,
   QrCodeScanIcon,
   Search01Icon,
   Store03Icon,
+  Tag01Icon,
   UserCircleIcon,
 } from '@hugeicons/core-free-icons';
 import { NumberTicker } from '../ui/number-ticker';
@@ -69,8 +70,11 @@ export function AdminSidebar({ email, totalStock, currentView, onChangeView, onA
         <button className={currentView === 'cms' ? 'is-current' : ''} type="button" onClick={() => onChangeView('cms')}>
           <span><AdminIcon icon={ImageAdd02Icon} size={18} /> CMS Assets</span>
         </button>
-        <button className={currentView === 'doku' ? 'is-current' : ''} type="button" onClick={() => onChangeView('doku')}>
-          <span><AdminIcon icon={Payment02Icon} size={18} /> DOKU Sandbox</span>
+        <button className={currentView === 'banners' ? 'is-current' : ''} type="button" onClick={() => onChangeView('banners')}>
+          <span><AdminIcon icon={LayersLogoIcon} size={18} /> Banners</span>
+        </button>
+        <button className={currentView === 'categories' ? 'is-current' : ''} type="button" onClick={() => onChangeView('categories')}>
+          <span><AdminIcon icon={Tag01Icon} size={18} /> Kategori</span>
         </button>
       </nav>
 

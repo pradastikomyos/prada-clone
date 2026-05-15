@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import confetti from 'canvas-confetti';
 import QRCode from 'qrcode';
 import { BrandLogo } from '../components/ui/BrandLogo';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { getCheckoutResult, reconcileDokuPayment } from '../services/commerce';
+import { normalizeQrPayload } from '../utils/orderHelpers';
 import type { CheckoutResultOrder } from '../services/commerce';
 
 const IDR = new Intl.NumberFormat('id-ID', {
@@ -13,10 +15,11 @@ const IDR = new Intl.NumberFormat('id-ID', {
   maximumFractionDigits: 0,
 });
 
-/** Poll interval in ms while order is still pending_payment */
-const POLL_INTERVAL = 4_000;
+const POLL_DELAYS = [0, 4_000, 8_000, 15_000, 30_000, 60_000] as const;
 /** Max polls before giving up and showing "check later" message */
 const MAX_POLLS = 15;
+/** After this many polls, auto-trigger DOKU reconcile in background */
+const AUTO_RECONCILE_AFTER_POLLS = 3;
 
 function QRCodeCanvas({ payload }: { payload: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -98,11 +101,50 @@ function StatusIcon({ status }: { status: CheckoutResultOrder['status'] }) {
   );
 }
 
+/**
+ * Rotating message while waiting for payment confirmation.
+ * Cycles through reassuring messages every ~3 seconds so the user
+ * feels progress even though we're just waiting for DOKU webhook.
+ */
+const PENDING_MESSAGES = [
+  'Pembayaran sedang diverifikasi',
+  'Mohon bersabar ya',
+  'Mengecek status pembayaran',
+  'Hampir selesai',
+];
+
+function RotatingPendingMessage({ pollCount }: { pollCount: number }) {
+  const [messageIndex, setMessageIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setMessageIndex((prev) => (prev + 1) % PENDING_MESSAGES.length);
+    }, 3000);
+    return () => window.clearInterval(interval);
+  }, []);
+
+  // Reset to first message when poll count changes (fresh cycle)
+  useEffect(() => {
+    setMessageIndex(0);
+  }, [pollCount]);
+
+  return (
+    <span className="checkout-result-rotating-msg" key={messageIndex}>
+      {PENDING_MESSAGES[messageIndex]}
+      <span className="checkout-result-dots" aria-hidden="true">
+        <span>.</span><span>.</span><span>.</span>
+      </span>
+    </span>
+  );
+}
+
 export function CheckoutResultPage() {
   const [searchParams] = useSearchParams();
   const invoice = useMemo(() => searchParams.get('invoice'), [searchParams]);
   const [pollCount, setPollCount] = useState(0);
   const queryClient = useQueryClient();
+  const previousStatusRef = useRef<CheckoutResultOrder['status'] | null>(null);
+  const confettiTriggeredRef = useRef(false);
 
   useEffect(() => {
     document.title = 'Order Confirmation | Spark Stage';
@@ -112,20 +154,71 @@ export function CheckoutResultPage() {
     queryKey: ['checkout-result', invoice],
     queryFn: () => getCheckoutResult(invoice!),
     enabled: isSupabaseConfigured && Boolean(invoice),
-    // Poll while status is still pending_payment, stop after max polls
-    refetchInterval: (query) => {
-      const status = query.state.data?.order?.status;
-      const kind = query.state.data?.kind;
-      if (kind === 'not_found' || kind === 'not_owner') return false;
-      if (!status || status === 'pending_payment') {
-        if (pollCount >= MAX_POLLS) return false;
-        setPollCount((c) => c + 1);
-        return POLL_INTERVAL;
-      }
-      return false;
-    },
+    refetchInterval: false,
     staleTime: 0,
   });
+
+  useEffect(() => {
+    const nextStatus = orderQuery.data?.order?.status ?? null;
+    const previousStatus = previousStatusRef.current;
+
+    if (!confettiTriggeredRef.current && previousStatus === 'pending_payment' && nextStatus === 'pending_pickup') {
+      confettiTriggeredRef.current = true;
+      const duration = 2600;
+      const end = Date.now() + duration;
+      const defaults = { startVelocity: 40, spread: 360, ticks: 100, zIndex: 9999, scalar: 1.1 };
+      const colors = ['#FFD700', '#C0C0C0', '#FCEABB', '#EFEFEF'];
+      const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
+
+      const interval = window.setInterval(() => {
+        const timeLeft = end - Date.now();
+        if (timeLeft <= 0) {
+          window.clearInterval(interval);
+          return;
+        }
+
+        const particleCount = 360 * (timeLeft / duration);
+        confetti({
+          ...defaults,
+          particleCount,
+          origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+          colors,
+          shapes: ['square', 'circle', 'star'],
+        });
+        confetti({
+          ...defaults,
+          particleCount,
+          origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+          colors,
+          shapes: ['square', 'circle', 'star'],
+        });
+      }, 250);
+    }
+
+    previousStatusRef.current = nextStatus;
+  }, [orderQuery.data?.order?.status]);
+
+  useEffect(() => {
+    if (orderQuery.isLoading || orderQuery.isFetching || orderQuery.isError) return;
+    const kind = orderQuery.data?.kind;
+    const status = orderQuery.data?.order?.status;
+    if (kind === 'not_found' || kind === 'not_owner') return;
+    if (status && status !== 'pending_payment') return;
+    if (pollCount >= MAX_POLLS) return;
+
+    let cancelled = false;
+    const delay = POLL_DELAYS[Math.min(pollCount, POLL_DELAYS.length - 1)];
+    const timeoutId = window.setTimeout(() => {
+      if (cancelled) return;
+      setPollCount((current) => current + 1);
+      void orderQuery.refetch();
+    }, delay);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+    };
+  }, [orderQuery, pollCount]);
 
   const reconcileMutation = useMutation({
     mutationFn: () => reconcileDokuPayment({ invoice_number: invoice! }),
@@ -136,10 +229,34 @@ export function CheckoutResultPage() {
     },
   });
 
+  // Auto-trigger reconcile after a few polls if still pending — no manual click needed.
+  const autoReconcileTriggered = useRef(false);
+  useEffect(() => {
+    if (
+      pollCount >= AUTO_RECONCILE_AFTER_POLLS &&
+      !autoReconcileTriggered.current &&
+      !reconcileMutation.isPending &&
+      !reconcileMutation.isSuccess &&
+      invoice &&
+      orderQuery.data?.kind !== 'not_found' &&
+      orderQuery.data?.kind !== 'not_owner' &&
+      (!orderQuery.data?.order || orderQuery.data.order.status === 'pending_payment')
+    ) {
+      autoReconcileTriggered.current = true;
+      reconcileMutation.mutate();
+    }
+  }, [pollCount, invoice, orderQuery.data, reconcileMutation]);
+
   const result = orderQuery.data;
   const order = result?.order ?? null;
   const resultKind = result?.kind;
-  const pickupCode = order?.pickup_codes?.[0];
+  // PostgREST may return pickup_codes as object (unique FK) or array — normalize
+  const rawCodes = order?.pickup_codes;
+  const pickupCode = rawCodes == null
+    ? undefined
+    : Array.isArray(rawCodes)
+      ? rawCodes[0]
+      : rawCodes;
   const isSuccess = order?.status === 'pending_pickup' || order?.status === 'picked_up';
   const isFailed = order?.status === 'cancelled' || order?.status === 'expired';
   const isPending = Boolean(
@@ -190,7 +307,9 @@ export function CheckoutResultPage() {
           <>
             <StatusIcon status="pending_payment" />
             <p className="checkout-result-eyebrow">Menunggu konfirmasi</p>
-            <h1 className="checkout-result-title">Pembayaran sedang diverifikasi</h1>
+            <h1 className="checkout-result-title">
+              <RotatingPendingMessage pollCount={pollCount} />
+            </h1>
             <p className="checkout-result-body">
               Kami sedang menunggu konfirmasi dari bank. Halaman ini akan otomatis diperbarui.
             </p>
@@ -282,10 +401,10 @@ export function CheckoutResultPage() {
                 <p className="checkout-result-pickup-label">Your Pickup Code</p>
                 <p className="checkout-result-pickup-code">{pickupCode.code}</p>
                 <p className="checkout-result-pickup-hint">
-                  Show this code or scan the QR below at our store counter to collect your order.
+                  Tunjukkan QR code ini saat mengambil barang di toko kami.
                 </p>
                 <div className="checkout-result-qr">
-                  <QRCodeCanvas payload={pickupCode.qr_payload} />
+                  <QRCodeCanvas payload={normalizeQrPayload(pickupCode.qr_payload)} />
                 </div>
               </section>
             )}
@@ -309,7 +428,12 @@ export function CheckoutResultPage() {
               </div>
             </section>
 
-            <Link to="/" className="checkout-result-cta">Continue Shopping</Link>
+            <div className="checkout-result-actions">
+              <Link to="/my-orders" className="checkout-result-cta-secondary">
+                Lihat Semua Pesanan
+              </Link>
+              <Link to="/" className="checkout-result-cta">Continue Shopping</Link>
+            </div>
           </div>
         )}
 

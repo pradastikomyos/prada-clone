@@ -2,10 +2,12 @@ import {
   DashboardSquare03Icon,
   ImageAdd02Icon,
   Invoice03Icon,
+  LayersLogoIcon,
   Payment02Icon,
   QrCodeScanIcon,
   Settings02Icon,
   ShoppingBag03Icon,
+  Tag01Icon,
 } from '@hugeicons/core-free-icons';
 import { AdminIcon } from './AdminIcon';
 import type { AdminView } from '../../pages/admin/types';
@@ -31,6 +33,12 @@ export function AdminRail({ currentView, onChangeView }: { currentView: AdminVie
       </button>
       <button className={`admin-rail-button ${currentView === 'cms' ? 'is-active' : ''}`} type="button" aria-label="CMS Assets" title="CMS Assets" onClick={() => onChangeView('cms')}>
         <AdminIcon icon={ImageAdd02Icon} size={22} />
+      </button>
+      <button className={`admin-rail-button ${currentView === 'banners' ? 'is-active' : ''}`} type="button" aria-label="Banners" title="Banner Manager" onClick={() => onChangeView('banners')}>
+        <AdminIcon icon={LayersLogoIcon} size={22} />
+      </button>
+      <button className={`admin-rail-button ${currentView === 'categories' ? 'is-active' : ''}`} type="button" aria-label="Categories" title="Kategori Produk" onClick={() => onChangeView('categories')}>
+        <AdminIcon icon={Tag01Icon} size={22} />
       </button>
       <button className={`admin-rail-button ${currentView === 'doku' ? 'is-active' : ''} admin-rail-bottom`} type="button" aria-label="Settings" title="Settings" onClick={() => onChangeView('doku')}>
         <AdminIcon icon={Settings02Icon} size={22} />

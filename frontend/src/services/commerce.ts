@@ -87,6 +87,23 @@ export async function createProduct(input: ProductFormInput) {
   return product.id as string;
 }
 
+export async function updateProduct(
+  productId: string,
+  input: Partial<Pick<ProductFormInput, 'name' | 'description' | 'status' | 'priceIdr' | 'category'>>,
+) {
+  const client = requireSupabaseClient();
+
+  const payload: Record<string, unknown> = {};
+  if (input.name !== undefined) payload.name = input.name;
+  if (input.description !== undefined) payload.description = input.description?.trim() ? input.description : null;
+  if (input.status !== undefined) payload.status = input.status;
+  if (input.category !== undefined) payload.category = input.category;
+  if (input.priceIdr !== undefined) payload.base_price_idr = input.priceIdr;
+
+  const { error } = await client.from('products').update(payload).eq('id', productId);
+  if (error) throw error;
+}
+
 export async function updateProductStatus(productId: string, status: AdminProduct['status']) {
   const client = requireSupabaseClient();
   const { error } = await client.from('products').update({ status }).eq('id', productId);

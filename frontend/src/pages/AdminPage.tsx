@@ -16,6 +16,7 @@
  */
 
 import { lazy, Suspense, useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Session } from '@supabase/supabase-js';
 import { AdminRail, AdminSidebar } from '../components/admin';
@@ -37,14 +38,17 @@ const PaymentHealthSection = lazy(() =>
 const BopisSection = lazy(() =>
   import('./admin/BopisSection').then((m) => ({ default: m.BopisSection })),
 );
-const DokuSection = lazy(() =>
-  import('./admin/DokuSection').then((m) => ({ default: m.DokuSection })),
-);
 const DashboardSection = lazy(() =>
   import('./admin/DashboardSection').then((m) => ({ default: m.DashboardSection })),
 );
 const CmsSection = lazy(() =>
   import('./admin/CmsSection').then((m) => ({ default: m.CmsSection })),
+);
+const BannerSection = lazy(() =>
+  import('./admin/BannerSection').then((m) => ({ default: m.BannerSection })),
+);
+const CategorySection = lazy(() =>
+  import('./admin/CategorySection').then((m) => ({ default: m.CategorySection })),
 );
 
 function SectionFallback() {
@@ -69,6 +73,19 @@ export function AdminPage() {
     : 'inventory';
 
   const setTab = (next: AdminView) => navigate(`/admin/${next}`, { replace: true });
+  const totalStockQuery = useQuery({
+    queryKey: ['admin-total-stock'],
+    enabled: Boolean(session && role === 'admin'),
+    queryFn: async () => {
+      // TODO: Kiro — verifikasi RLS allow admin read all variants.
+      if (!supabase) return 0;
+      const { data, error } = await supabase
+        .from('product_variants')
+        .select('stock_quantity');
+      if (error) return 0;
+      return (data ?? []).reduce((sum, row) => sum + Number((row as { stock_quantity?: number }).stock_quantity ?? 0), 0);
+    },
+  });
 
   // ── Auth ──────────────────────────────────────────────────────────────────
 
@@ -216,7 +233,7 @@ export function AdminPage() {
 
         <AdminSidebar
           email={session.user.email}
-          totalStock={0}
+          totalStock={totalStockQuery.data ?? 0}
           currentView={tab}
           onChangeView={setTab}
           onAddProduct={handleAddProduct}
@@ -232,7 +249,8 @@ export function AdminPage() {
           {tab === 'payments' && <PaymentHealthSection isReady={isReady} />}
           {tab === 'bopis' && <BopisSection />}
           {tab === 'cms' && <CmsSection isReady={isReady} />}
-          {tab === 'doku' && <DokuSection isReady={isReady} />}
+          {tab === 'banners' && <BannerSection isReady={isReady} />}
+          {tab === 'categories' && <CategorySection isReady={isReady} />}
         </Suspense>
       </div>
     </main>

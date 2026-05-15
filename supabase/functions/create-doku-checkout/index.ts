@@ -58,6 +58,19 @@ function makeInvoiceNumber() {
   return `INV${Date.now()}${suffix}`.slice(0, 30);
 }
 
+function nestedRecord(parent: Record<string, unknown>, key: string) {
+  const value = parent[key];
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : {};
+}
+
+function extractDokuResponseRequestId(payload: Record<string, unknown>) {
+  const response = nestedRecord(payload, 'response');
+  const headers = nestedRecord(response, 'headers');
+  return (headers.request_id ?? headers.requestId ?? null) as string | null;
+}
+
 async function digestBody(body: string) {
   const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(body));
   return btoa(String.fromCharCode(...new Uint8Array(hash)));
@@ -241,7 +254,7 @@ Deno.serve(async (req) => {
     if (!dokuResponse.ok) {
       await supabase.from('payment_attempts').insert({
         order_id: order.order_id,
-        request_id: dokuJson?.response?.headers?.requestId ?? null,
+        request_id: extractDokuResponseRequestId(dokuJson),
         status: 'failed',
         amount_idr: totalAmount,
         raw_payload: dokuJson,
@@ -269,7 +282,7 @@ Deno.serve(async (req) => {
     await supabase.from('payment_attempts').insert({
       order_id: order.order_id,
       provider_reference: sessionId ?? null,
-      request_id: dokuJson?.response?.headers?.requestId ?? null,
+      request_id: extractDokuResponseRequestId(dokuJson),
       status: 'pending',
       amount_idr: totalAmount,
       raw_payload: dokuJson,

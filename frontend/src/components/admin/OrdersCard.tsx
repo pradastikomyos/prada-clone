@@ -42,6 +42,18 @@ function formatTimestamp(iso: string | null | undefined, label: string): string 
   return `${label}: ${d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })} ${d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`;
 }
 
+function formatWaitingTime(iso: string | null | undefined) {
+  if (!iso) return null;
+  const diffMs = Date.now() - new Date(iso).getTime();
+  if (!Number.isFinite(diffMs) || diffMs < 0) return null;
+  const hours = Math.floor(diffMs / (1000 * 60 * 60));
+  const days = Math.floor(hours / 24);
+  if (days >= 1) return `Menunggu sejak ${days} hari yang lalu`;
+  if (hours >= 1) return `Menunggu sejak ${hours} jam yang lalu`;
+  const minutes = Math.max(1, Math.floor(diffMs / (1000 * 60)));
+  return `Menunggu sejak ${minutes} menit yang lalu`;
+}
+
 export function OrdersCard({
   orders,
   selectedOrder,
@@ -97,8 +109,8 @@ export function OrdersCard({
                   {pickupCode && (
                     <span className="admin-order-strip-code">{pickupCode}</span>
                   )}
-                  {(activeTab === 'pending_pickup' || activeTab === 'all') && paidTs && (
-                    <span className="admin-order-strip-ts">{paidTs}</span>
+                  {(activeTab === 'pending_pickup' || activeTab === 'all') && order.paid_at && (
+                    <span className="admin-order-strip-ts">{formatWaitingTime(order.paid_at) ?? paidTs}</span>
                   )}
                   {(activeTab === 'completed' || activeTab === 'all') && pickedTs && (
                     <span className="admin-order-strip-ts">{pickedTs}</span>

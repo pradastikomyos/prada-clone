@@ -4,5 +4,5 @@
  * all import from one place — no more duplicated local type aliases.
  */
 
-export const ADMIN_VIEWS = ['dashboard', 'inventory', 'orders', 'payments', 'bopis', 'cms', 'doku'] as const;
+export const ADMIN_VIEWS = ['dashboard', 'inventory', 'orders', 'payments', 'bopis', 'cms', 'banners', 'categories', 'doku'] as const;
 export type AdminView = (typeof ADMIN_VIEWS)[number];

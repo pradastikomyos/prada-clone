@@ -24,6 +24,7 @@ export { AdminDetailTop } from './AdminDetailTop';
 export { ProductFormCard } from './ProductFormCard';
 export { PickupVerificationCard } from './PickupVerificationCard';
 export { OrdersCard } from './OrdersCard';
+export { OrderPreviewModal } from './OrderPreviewModal';
 export { DokuCheckoutCard } from './DokuCheckoutCard';
 export { PaymentHealthCard } from './PaymentHealthCard';
 export { DashboardView } from './DashboardView';
