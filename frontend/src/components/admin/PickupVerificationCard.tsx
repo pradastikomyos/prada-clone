@@ -81,12 +81,16 @@ export function PickupVerificationCard({
               onChange={(event) => onPickupCodeChange(event.target.value.toUpperCase())}
               placeholder="Contoh: PRX-9C1-984"
             />
-            {!canPreview && (
-              <button type="submit" disabled={isPending || !pickupCode}>
-                {isPending ? 'Memuat...' : 'Cari Order'}
-              </button>
-            )}
+            <button type="submit" disabled={isPending || !pickupCode}>
+              {isPending ? 'Memuat...' : 'Cari'}
+            </button>
           </div>
+          {/* Show not-found feedback when code is long enough but no order found */}
+          {pickupCode.length >= 3 && !isLoadingOrder && !orderDetail ? (
+            <p className="admin-error" style={{ marginTop: '12px', textAlign: 'center' }}>
+              Kode pickup tidak ditemukan. Pastikan kode sudah benar.
+            </p>
+          ) : null}
           {error ? (
             <p className="admin-error" style={{ marginTop: '12px', textAlign: 'center' }}>
               {error.message}
