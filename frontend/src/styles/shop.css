@@ -4290,18 +4290,18 @@ a:focus-visible {
   gap: 10px;
   padding: 0 28px;
   min-height: 48px;
-  background: #CA8A04 !important;
-  color: #fff !important;
-  border: 1px solid #A16207;
+  background: #111;
+  color: #fff;
+  border: 1px solid #111;
   border-radius: 8px;
   font-weight: 600;
   font-size: 14px;
-  transition: all 200ms ease;
+  transition: background 150ms ease;
 }
 
 .admin-bopis-activate-btn:hover {
-  background: #B47C02 !important;
-  transform: translateY(-1px);
+  background: #333;
+  transform: none;
 }
 
 .admin-bopis-camera-placeholder {
@@ -4416,7 +4416,233 @@ a:focus-visible {
   color: #1C1917;
 }
 
-/* ── QR Scanner Modal ───────────────────────────────────────────────── */
+/* ── Order Preview Modal ────────────────────────────────────────────── */
+.order-preview-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+@media (min-width: 600px) {
+  .order-preview-backdrop {
+    align-items: center;
+    padding: 24px;
+  }
+}
+
+.order-preview-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.order-preview-panel {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 520px;
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  overflow: hidden;
+}
+
+@media (min-width: 600px) {
+  .order-preview-panel {
+    border-radius: 20px;
+    max-height: 85vh;
+  }
+}
+
+.order-preview-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid #e7e7e7;
+  flex-shrink: 0;
+}
+
+.order-preview-eyebrow {
+  margin: 0 0 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #888;
+}
+
+.order-preview-invoice {
+  margin: 0 0 2px;
+  font-size: clamp(14px, 3.5vw, 20px);
+  font-weight: 700;
+  word-break: break-all;
+  line-height: 1.2;
+}
+
+.order-preview-customer {
+  margin: 0;
+  font-size: 13px;
+  color: #666;
+}
+
+.order-preview-close {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: #f2f2f2;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  color: #555;
+  display: grid;
+  place-items: center;
+}
+
+.order-preview-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.order-preview-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.order-preview-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.order-preview-meta-row > span:first-child {
+  color: #888;
+  flex-shrink: 0;
+}
+
+.order-preview-code {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 15px;
+  letter-spacing: 0.08em;
+}
+
+.order-preview-items {
+  padding: 14px;
+  background: #f9f9f9;
+  border-radius: 12px;
+  border: 1px solid #efefef;
+}
+
+.order-preview-items-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #888;
+}
+
+.order-preview-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid #efefef;
+  font-size: 13px;
+}
+
+.order-preview-item-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.order-preview-item-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.order-preview-item-price {
+  flex-shrink: 0;
+  font-weight: 600;
+}
+
+.order-preview-error {
+  padding: 12px 14px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  font-size: 13px;
+  color: #dc2626;
+}
+
+.order-preview-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 20px;
+  border-top: 1px solid #e7e7e7;
+  flex-shrink: 0;
+}
+
+@media (min-width: 480px) {
+  .order-preview-footer {
+    flex-direction: row;
+  }
+}
+
+.order-preview-btn {
+  flex: 1;
+  min-height: 48px;
+  padding: 0 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: opacity 150ms;
+}
+
+.order-preview-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.order-preview-btn--cancel {
+  background: #f2f2f2;
+  color: #555;
+  border: 1px solid #e0e0e0;
+}
+
+.order-preview-btn--confirm {
+  background: #111;
+  color: #fff;
+}
+
+.order-preview-btn--confirm:hover:not(:disabled) {
+  background: #333;
+}
 .qr-modal-backdrop {
   position: fixed;
   inset: 0;
