@@ -19,6 +19,7 @@ import {
 } from '../../components/admin';
 import {
   createProduct,
+  listAdminOrders,
   listAdminProducts,
   updateProductStatus,
   updateVariantStock,
@@ -38,8 +39,8 @@ const initialForm: ProductFormInput = {
   description: '',
   category: 'CLOTHING',
   status: 'active',
-  priceIdr: 199000,
-  stockQuantity: 10,
+  priceIdr: 0,
+  stockQuantity: 0,
   imageUrl: '',
 };
 
@@ -71,7 +72,17 @@ export function InventorySection({ isReady }: InventorySectionProps) {
     [productsQuery.data],
   );
 
-  const pendingPickupCount = 0; // Orders query lives in OrdersSection; pass 0 here.
+  const ordersQuery = useQuery({
+    queryKey: ['admin-orders'],
+    queryFn: listAdminOrders,
+    enabled: isReady,
+    staleTime: 30_000,
+  });
+
+  const pendingPickupCount = useMemo(
+    () => ordersQuery.data?.filter((o) => o.status === 'pending_pickup').length ?? 0,
+    [ordersQuery.data],
+  );
 
   const createMutation = useMutation({
     mutationFn: createProduct,

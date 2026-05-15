@@ -3,6 +3,14 @@ import { AdminProduct } from '../../types/commerce';
 import { AdminIcon } from './AdminIcon';
 import { ProductFeedSkeleton } from './AdminSkeleton';
 
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Selamat Pagi';
+  if (hour < 15) return 'Selamat Siang';
+  if (hour < 18) return 'Selamat Sore';
+  return 'Selamat Malam';
+}
+
 type AdminProductListPaneProps = {
   products?: AdminProduct[];
   selectedProductId?: string | null;
@@ -32,7 +40,7 @@ export function AdminProductListPane({
     <section className="admin-list-pane">
       <header className="admin-pane-header">
         <div>
-          <h1>Good Morning, Admin</h1>
+          <h1>{getGreeting()}</h1>
           <span>{products?.length ?? 0} Products</span>
         </div>
         <button type="button" onClick={onRefresh} aria-label="Refresh products">

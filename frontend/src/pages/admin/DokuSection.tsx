@@ -22,9 +22,9 @@ export function DokuSection({ isReady }: DokuSectionProps) {
   const queryClient = useQueryClient();
 
   const [checkoutCustomer, setCheckoutCustomer] = useState({
-    name: 'Spark Demo Customer',
-    email: 'demo@sparkstage.local',
-    phone: '6281234567890',
+    name: '',
+    email: '',
+    phone: '',
   });
   const [checkoutResult, setCheckoutResult] = useState<{
     invoice_number: string;
