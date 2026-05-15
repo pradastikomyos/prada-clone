@@ -16,7 +16,7 @@ export type { AdminSidebarItemProps } from './AdminSidebarItem';
 export { AdminIcon } from './AdminIcon';
 export type { AdminIconProps } from './AdminIcon';
 
-export { AdminRail } from './AdminRail';
+export { AdminRail, AdminMobileNav } from './AdminRail';
 export { AdminSidebar } from './AdminSidebar';
 export { AdminProductListPane } from './AdminProductListPane';
 export { InventoryDetailCard } from './InventoryDetailCard';

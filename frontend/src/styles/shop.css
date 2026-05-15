@@ -4416,6 +4416,244 @@ a:focus-visible {
   color: #1C1917;
 }
 
+/* ── QR Scanner Modal ───────────────────────────────────────────────── */
+.qr-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+}
+
+@media (min-width: 600px) {
+  .qr-modal-backdrop {
+    align-items: center;
+    padding: 24px;
+  }
+}
+
+.qr-modal-panel {
+  width: 100%;
+  max-width: 480px;
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  max-height: 92vh;
+}
+
+@media (min-width: 600px) {
+  .qr-modal-panel {
+    border-radius: 20px;
+    max-height: 85vh;
+  }
+}
+
+.qr-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e7e7e7;
+  flex-shrink: 0;
+}
+
+.qr-modal-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.qr-modal-close {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: #f2f2f2;
+  border-radius: 50%;
+  cursor: pointer;
+  color: #555;
+}
+
+.qr-modal-body {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  min-height: 280px;
+  background: #000;
+}
+
+.qr-scanner-region {
+  width: 100%;
+  height: 100%;
+  min-height: 280px;
+}
+
+/* html5-qrcode injects a video element — make it fill the container */
+.qr-scanner-region video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+}
+
+/* html5-qrcode injects a canvas overlay — keep it on top */
+.qr-scanner-region canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.qr-scanner-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 14px;
+}
+
+.qr-modal-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+  text-align: center;
+  background: #fff;
+  min-height: 200px;
+}
+
+.qr-modal-footer {
+  padding: 12px 20px;
+  border-top: 1px solid #e7e7e7;
+  text-align: center;
+  flex-shrink: 0;
+  background: #fff;
+}
+
+/* ── Admin Mobile Navigation ────────────────────────────────────────── */
+/* Bottom tab bar shown on mobile when rail+sidebar are hidden */
+.admin-mobile-nav {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .admin-app {
+    padding: 0;
+    padding-bottom: 64px; /* space for bottom nav */
+  }
+
+  .admin-window {
+    display: block;
+    min-height: auto;
+    height: auto;
+    overflow: visible;
+  }
+
+  .admin-rail,
+  .admin-sidebar {
+    display: none;
+  }
+
+  .admin-detail-pane {
+    position: static;
+    transform: none;
+    width: 100%;
+    height: auto;
+    min-height: calc(100vh - 64px);
+    overflow-y: auto;
+  }
+
+  /* Bottom navigation bar */
+  .admin-mobile-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: #fff;
+    border-top: 1px solid #e7e7e7;
+    height: 64px;
+    align-items: stretch;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .admin-mobile-nav__btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    flex: 1;
+    min-width: 56px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: #888;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 8px 4px;
+    transition: color 150ms;
+  }
+
+  .admin-mobile-nav__btn.is-active {
+    color: #111;
+  }
+
+  .admin-mobile-nav__btn.is-active svg,
+  .admin-mobile-nav__btn.is-active path {
+    stroke: #111;
+  }
+
+  /* BOPIS section mobile tweaks */
+  .admin-bopis-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .admin-bopis-input-group {
+    flex-direction: column;
+  }
+
+  .admin-bopis-input-group input {
+    width: 100%;
+  }
+
+  .admin-bopis-input-group button {
+    width: 100%;
+  }
+
+  /* Order preview modal mobile */
+  .product-edit-modal__panel {
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 20px 20px 0 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-width: 100%;
+  }
+
+  .product-edit-modal {
+    align-items: flex-end;
+  }
+}
+
 /* ============================================================
    CHECKOUT RESULT PAGE
    ============================================================ */

@@ -19,7 +19,7 @@ import { lazy, Suspense, useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Session } from '@supabase/supabase-js';
-import { AdminRail, AdminSidebar } from '../components/admin';
+import { AdminRail, AdminMobileNav, AdminSidebar } from '../components/admin';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { getCurrentUserRole } from '../services/auth';
 import { ADMIN_VIEWS, type AdminView } from './admin/types';
@@ -252,6 +252,8 @@ export function AdminPage() {
           {tab === 'banners' && <BannerSection isReady={isReady} />}
           {tab === 'categories' && <CategorySection isReady={isReady} />}
         </Suspense>
+
+        <AdminMobileNav currentView={tab} onChangeView={setTab} />
       </div>
     </main>
   );
