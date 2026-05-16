@@ -33,116 +33,135 @@
 ---
 
 ## SPRINT 1 — Fix Payment Opening (Priority: CRITICAL)
-*Masalah: saat ini buka tab baru, bikin UX jelek dan susah testing*
 
 | ID | Task | File | Status |
 |---|---|---|---|
-| S1-T1 | Buat `frontend/src/utils/dokuCheckout.ts` — load DOKU SDK script + `openDokuCheckout(url)` | `utils/dokuCheckout.ts` (baru) | ⬜ |
-| S1-T2 | Ubah checkout flow: ganti `window.open` → `loadDokuCheckoutScript()` + `openDokuCheckout()` | `services/commerce.ts` atau komponen checkout | ⬜ |
-| S1-T3 | Setelah `openDokuCheckout()`, navigate ke `/checkout-result?invoice=...&pending=1` | Komponen checkout | ⬜ |
-| S1-T4 | Verifikasi `callback_url` di edge function sudah mengarah ke `/checkout-result?invoice=...` | `supabase/functions/create-doku-checkout/index.ts` | ⬜ |
+| S1-T1 | Buat `frontend/src/utils/dokuCheckout.ts` | `utils/dokuCheckout.ts` | ✅ |
+| S1-T2 | Ganti `window.open` → SDK overlay | `CartDrawer.tsx` | ✅ |
+| S1-T3 | Navigate ke checkout-result sebelum openDokuCheckout | `CartDrawer.tsx` | ✅ |
+| S1-T4 | Verifikasi `callback_url` di edge function | `create-doku-checkout/index.ts` | ✅ |
 
 ---
 
 ## SPRINT 2 — Improve Checkout Result Page (Priority: HIGH)
-*Masalah: transisi pending→sukses kurang smooth, QR payload format salah, tidak ada confetti*
 
 | ID | Task | File | Status |
 |---|---|---|---|
-| S2-T1 | Tambah `canvas-confetti` — trigger saat status berubah dari `pending_payment` → `pending_pickup` | `CheckoutResultPage.tsx` | ⬜ |
-| S2-T2 | Ganti flat polling 4s → escalating delays `[0, 4s, 8s, 15s, 30s, 60s]` | `CheckoutResultPage.tsx` | ⬜ |
-| S2-T3 | Simplify QR payload: ganti JSON object → string mentah pickup code (ikut Spark) | Migration + `CheckoutResultPage.tsx` | ⬜ |
-| S2-T4 | Tambah smooth CSS transition saat state berubah pending → success (fade/slide, bukan hard replace) | `CheckoutResultPage.tsx` + CSS | ⬜ |
-| S2-T5 | Tambah instruksi pickup yang jelas: "Tunjukkan QR ini saat ambil barang di toko" | `CheckoutResultPage.tsx` | ⬜ |
-| S2-T6 | Tambah tombol "Lihat Pesanan Saya" → `/my-orders` di halaman sukses | `CheckoutResultPage.tsx` | ⬜ |
+| S2-T1 | Confetti saat `pending_payment` → `pending_pickup` | `CheckoutResultPage.tsx` | ✅ |
+| S2-T2 | Escalating poll delays `[0, 4s, 8s, 15s, 30s, 60s]` | `CheckoutResultPage.tsx` | ✅ |
+| S2-T3 | Normalize QR payload (JSON → string) | `orderHelpers.ts` | ✅ |
+| S2-T4 | Rotating pending messages dengan animated dots | `CheckoutResultPage.tsx` | ✅ |
+| S2-T5 | Instruksi pickup + tombol "Lihat Semua Pesanan" | `CheckoutResultPage.tsx` | ✅ |
+| S2-T6 | Fix pickup_codes PostgREST object vs array | `CheckoutResultPage.tsx` | ✅ |
 
 ---
 
 ## SPRINT 3 — Customer Order History `/my-orders` (Priority: HIGH)
-*Belum ada sama sekali. Ini penting agar user bisa akses QR kapan saja*
 
 | ID | Task | File | Status |
 |---|---|---|---|
-| S3-T1 | Buat `classifyOrder()` helper — map status ke `pending / active / history` | `src/utils/orderHelpers.ts` (baru) | ⬜ |
-| S3-T2 | Buat `useMyOrders()` hook — fetch orders by `user_id`, optional realtime subscription | `src/hooks/useMyOrders.ts` (baru) | ⬜ |
-| S3-T3 | Buat `MyOrdersPage.tsx` — layout dengan tabs + empty state | `src/pages/MyOrdersPage.tsx` (baru) | ⬜ |
-| S3-T4 | Buat `MyOrdersTabs` — tabs Pending / Aktif / Selesai dengan badge count | `src/pages/my-orders/MyOrdersTabs.tsx` (baru) | ⬜ |
-| S3-T5 | Buat `MyOrderCard` — invoice, status badge, tanggal, total, item count, QR jika pickup ready | `src/pages/my-orders/MyOrderCard.tsx` (baru) | ⬜ |
-| S3-T6 | QR di card: tampil hanya kalau `payment_status=paid` dan `pickup_codes` ada | `MyOrderCard.tsx` | ⬜ |
-| S3-T7 | Tombol aksi per card: "Lihat Detail" → `/checkout-result?invoice=...` | `MyOrderCard.tsx` | ⬜ |
-| S3-T8 | Tambah route `/my-orders` ke router (protected, customer only) | `src/app/router.tsx` | ⬜ |
-| S3-T9 | Tambah link "Pesanan Saya" di `UserHeaderActions` untuk customer (bukan admin) | `src/components/UserHeaderActions.tsx` | ⬜ |
+| S3-T1 | `classifyOrder()` + `isPickupReady()` + `normalizeQrPayload()` | `orderHelpers.ts` | ✅ |
+| S3-T2 | `useMyOrders()` hook + normalize pickup_codes | `useMyOrders.ts` | ✅ |
+| S3-T3 | `MyOrdersPage.tsx` — layout + tabs + empty state | `MyOrdersPage.tsx` | ✅ |
+| S3-T4 | `MyOrdersTabs` — tabs dengan badge count | `my-orders/MyOrdersTabs.tsx` | ✅ |
+| S3-T5 | `MyOrderCard` — QR di card kalau pickup ready | `my-orders/MyOrderCard.tsx` | ✅ |
+| S3-T6 | `MyOrderDetailPage` — QR besar + order summary | `MyOrderDetailPage.tsx` | ✅ |
+| S3-T7 | Fix pickup_codes normalize di detail page | `MyOrderDetailPage.tsx` | ✅ |
+| S3-T8 | Route `/my-orders` + `/my-orders/:invoice` | `router.tsx` | ✅ |
+| S3-T9 | Link "Pesanan Saya" di header untuk customer | `UserHeaderActions.tsx` | ✅ |
 
 ---
 
 ## SPRINT 4 — Admin Pickup Verification Improvement (Priority: MEDIUM)
-*Masalah: saat ini langsung verify tanpa preview, tidak ada guard status*
 
 | ID | Task | File | Status |
 |---|---|---|---|
-| S4-T1 | Tambah `OrderPreviewModal` — tampilkan customer name, items, total, pickup code sebelum verify | `src/components/admin/OrderPreviewModal.tsx` (baru) | ⬜ |
-| S4-T2 | Flow: scan/input → lookup order → buka preview modal → admin klik "Konfirmasi & Serah Barang" | `BopisSection.tsx` atau `PickupVerificationCard.tsx` | ⬜ |
-| S4-T3 | Guard sebelum verify: tolak kalau `payment_status !== 'paid'` atau `status === 'picked_up'` | `services/commerce.ts` + UI | ⬜ |
-| S4-T4 | Toast sukses setelah verify: "Barang berhasil diserahkan ✅" | `BopisSection.tsx` | ⬜ |
-| S4-T5 | Auto-refresh order list setelah verify sukses | `AdminPage.tsx` / orders query | ⬜ |
+| S4-T1 | `OrderPreviewModal` — redesign dengan CSS proper, hitam | `OrderPreviewModal.tsx` | ✅ |
+| S4-T2 | Flow: scan/input → preview modal → konfirmasi | `BopisSection.tsx` | ✅ |
+| S4-T3 | Guard `payment_status !== 'paid'` + `status === 'picked_up'` | `BopisSection.tsx` | ✅ |
+| S4-T4 | Toast sukses + not-found feedback | `PickupVerificationCard.tsx` | ✅ |
+| S4-T5 | Invalidate queries setelah verify | `BopisSection.tsx` | ✅ |
 
 ---
 
-## SPRINT 5 — Admin Orders Section Polish (Priority: MEDIUM)
-*Sudah ada tapi perlu polish*
+## SPRINT 5 — Admin Orders Polish (Priority: MEDIUM)
 
 | ID | Task | File | Status |
 |---|---|---|---|
-| S5-T1 | Pastikan tab "Pending Pickup" menampilkan pickup code per order | `OrdersCard.tsx` | ⬜ |
-| S5-T2 | Tambah badge count yang akurat per tab (realtime) | `OrdersSection.tsx` | ⬜ |
-| S5-T3 | Tambah kolom `paid_at` di tab Pending Pickup (berapa lama sudah menunggu) | `OrdersCard.tsx` | ⬜ |
+| S5-T1 | Pickup code di tab Pending Pickup | `OrdersCard.tsx` | ✅ |
+| S5-T2 | Badge count akurat dari data | `OrdersSection.tsx` | ✅ |
+| S5-T3 | `paid_at` di tab Pending Pickup | `OrdersCard.tsx` | ✅ |
 
 ---
 
 ## SPRINT 6 — Cleanup & Polish (Priority: LOW)
-*Nice to have setelah semua sprint utama selesai*
 
 | ID | Task | File | Status |
 |---|---|---|---|
-| S6-T1 | Hapus `DokuSection` dari admin (dev-only, tidak perlu di production) | `AdminPage.tsx` | ⬜ |
-| S6-T2 | `AdminSidebar` total stock dari query, bukan hardcode 0 | `AdminSidebar.tsx` | ⬜ |
-| S6-T3 | `useSearchParamState` hook cleanup (tidak dipakai) | Codebase | ⬜ |
-| S6-T4 | Push semua perubahan ke GitHub + redeploy Vercel | Git | ⬜ |
+| S6-T1 | DokuSection hidden dari sidebar | `AdminPage.tsx` | ✅ |
+| S6-T2 | Total stock dari DB query | `AdminPage.tsx` | ✅ |
+| S6-T3 | `useSearchParamState` dihapus | — | ✅ |
+| S6-T4 | Push ke GitHub + Vercel | Git | ✅ |
+
+---
+
+## SPRINT A — CMS Product Management (Priority: HIGH)
+
+| ID | Task | File | Status |
+|---|---|---|---|
+| A1 | Product image upload ke Supabase Storage | `uploadProductImage.ts`, `ProductImageUploader.tsx` | ✅ |
+| A2 | Edit produk modal (nama, harga, deskripsi, kategori, status) | `ProductEditModal.tsx` | ✅ |
+| A3 | Multi-variant stock edit (semua variant) | `InventoryDetailCard.tsx` | ✅ |
+
+---
+
+## SPRINT B — CMS Banner + Category (Priority: MEDIUM)
+
+| ID | Task | File | Status |
+|---|---|---|---|
+| B1 | Banner Manager (CRUD per halaman, toggle aktif) | `BannerSection.tsx`, `banners.ts` | ✅ |
+| B2 | Category Manager (CRUD flat, toggle aktif) | `CategorySection.tsx`, `productCategories.ts` | ✅ |
+| B3 | DB: tabel banners + product_categories + RLS | Migration | ✅ |
+
+---
+
+## SPRINT M — Mobile Responsiveness (Priority: CRITICAL)
+
+| ID | Task | File | Status |
+|---|---|---|---|
+| M1 | QR scanner modal CSS (qr-modal-* semua missing) | `shop.css` | ✅ |
+| M2 | Admin layout mobile (block, bukan grid overflow) | `shop.css` | ✅ |
+| M3 | AdminMobileNav bottom tab bar | `AdminRail.tsx`, `AdminPage.tsx` | ✅ |
+| M4 | admin-detail-pane static di mobile | `shop.css` | ✅ |
+| M5 | BOPIS header/input stack vertikal di mobile | `shop.css` | ✅ |
+| M6 | OrderPreviewModal slide up dari bawah | `shop.css` | ✅ |
+
+---
+
+## SPRINT UI — UI Polish (Priority: MEDIUM)
+
+| ID | Task | File | Status |
+|---|---|---|---|
+| UI1 | Site footer Prada-style | `SiteFooter.tsx` | ✅ |
+| UI2 | Tombol pink → hitam di OrderPreviewModal | `OrderPreviewModal.tsx` | ✅ |
+| UI3 | Tombol "Aktifkan Pemindai" olive → hitam | `shop.css` | ✅ |
+| UI4 | Rotating pending messages di checkout result | `CheckoutResultPage.tsx` | ✅ |
+| UI5 | Greeting admin time-aware | `AdminProductListPane.tsx` | ✅ |
 
 ---
 
 ## Ringkasan Total
 
-| Sprint | Jumlah Task | Priority | Estimasi |
-|---|---|---|---|
-| S1 — Fix Payment Opening | 4 | CRITICAL | ~1.5 jam |
-| S2 — Checkout Result Page | 6 | HIGH | ~2 jam |
-| S3 — Customer Order History | 9 | HIGH | ~3 jam |
-| S4 — Admin Verify Improvement | 5 | MEDIUM | ~1.5 jam |
-| S5 — Admin Orders Polish | 3 | MEDIUM | ~1 jam |
-| S6 — Cleanup | 4 | LOW | ~1 jam |
-| **TOTAL** | **31 tasks** | | **~10 jam** |
-
----
-
-## Dependency Map
-
-```
-S1 (payment opening) → harus selesai dulu sebelum testing apapun
-S2 (checkout result) → bisa paralel dengan S3
-S3 (my-orders) → depend pada S2 selesai (butuh QR payload fix dari S2-T3)
-S4 (admin verify) → independent, bisa kapan saja
-S5 (admin polish) → independent
-S6 (cleanup) → terakhir
-```
-
----
-
-## Catatan Implementasi
-
-- **DOKU SDK URL sandbox**: `https://sandbox.doku.com/jokul-checkout-js/v1/jokul-checkout-1.0.0.js`
-- **DOKU SDK function**: `window.loadJokulCheckout(paymentUrl)` — buka overlay di atas halaman
-- **QR payload**: cukup string pickup code mentah (misal `PRX-AB5-480`), bukan JSON
-- **QR library**: sudah ada `qrcode` di project, bisa pakai `react-qr-code` untuk display
-- **Confetti**: install `canvas-confetti` + `@types/canvas-confetti`
-- **Realtime**: Supabase `channel().on('postgres_changes')` untuk my-orders
+| Sprint | Tasks | Status |
+|---|---|---|
+| S1 — Payment Opening | 4 | ✅ Done |
+| S2 — Checkout Result | 6 | ✅ Done |
+| S3 — Customer Orders | 9 | ✅ Done |
+| S4 — Admin Verify | 5 | ✅ Done |
+| S5 — Admin Orders | 3 | ✅ Done |
+| S6 — Cleanup | 4 | ✅ Done |
+| A — CMS Product | 3 | ✅ Done |
+| B — CMS Banner/Category | 3 | ✅ Done |
+| M — Mobile | 6 | ✅ Done |
+| UI — Polish | 5 | ✅ Done |
+| **TOTAL** | **48 tasks** | **✅ All Done** |

@@ -1,50 +1,54 @@
 # Payment Verification Checklist
 
-Date: 2026-05-13 (updated 2026-05-14)
+Date: 2026-05-13 (updated 2026-05-15)
 
 Scope: DOKU checkout auth, webhook payload mapping, reconcile/check-status behavior, and checkout result visibility.
 
 ## Current Deployment Status
 
-- Remote migrations synced through `20260513110000_fix_payment_event_digest_ambiguity.sql`.
-- `create-doku-checkout` deployed — authenticated order ownership + inventory reservation.
-- `doku-webhook` deployed — signature verify + `process_doku_payment_event`.
-- `get-checkout-result` deployed — customer-safe RLS result lookup.
-- `reconcile-doku-payment` deployed v5 — service-role bypass, normalized error detail, phase tagging.
-- `process_doku_payment_event` fixed — `extensions.digest()` schema qualification + `ON CONFLICT ON CONSTRAINT` (no more ambiguous column reference).
+- Remote migrations synced through `20260514073336_fix_on_conflict_ambiguity`.
+- `create-doku-checkout` v7 — authenticated, inventory reservation, DOKU SDK callback.
+- `doku-webhook` v8 — signature verify + `process_doku_payment_event` with error normalization.
+- `get-checkout-result` v1 — customer-safe RLS result lookup.
+- `reconcile-doku-payment` v6 — service-role bypass, normalized error detail, phase tagging.
+- `verify-pickup-code` v1 — admin-only RPC, atomic DB update.
+- `process_doku_payment_event` — fixed: `extensions.digest()` + `ON CONFLICT ON CONSTRAINT`.
 
-## ✅ Verified End-to-End (14 Mei 2026)
+## ✅ Verified End-to-End (15 Mei 2026 — Happy Path Test)
 
-Full sandbox flow confirmed working:
+Full sandbox flow confirmed working on production (Vercel):
 
 1. Login sebagai `pelanggan@gmail.com`
-2. Add to cart → checkout → DOKU hosted page (BCA VA)
+2. Add to cart → checkout → DOKU SDK overlay (BCA VA)
 3. Bayar di DOKU sandbox simulator
 4. Redirect ke `/checkout-result?invoice=...`
-5. Halaman otomatis hijau dalam ~12 detik (auto-reconcile)
-6. Animated green checkmark, "Payment Successful", pickup code, order summary tampil
+5. Auto-reconcile ~12 detik → halaman hijau + confetti
+6. QR pickup code muncul di checkout result dan `/my-orders`
+7. Admin login di HP (Android Chrome) → `/admin/bopis`
+8. Scan QR → preview modal → konfirmasi → `picked_up` ✅
 
-**Bukti**: `INV1778744188922D3BD5F59` — status `pending_pickup`, payment `paid`, pickup code generated.
-
-## Known Behavior
-
-- **Webhook vs reconcile**: Webhook dari DOKU dikirim tapi sebelumnya selalu gagal karena bug `digest()`. Setelah fix, webhook seharusnya langsung sukses. Auto-reconcile di frontend (~12 detik) adalah fallback kalau webhook delay/miss.
-- **Idempotency**: Kalau DOKU response identik (timestamp sama), idempotency key sama → function return early. Untuk force re-process, gunakan `event_idempotency_key` custom.
-- **Append-only `payment_events`**: Trigger `prevent_payment_event_mutation` blokir DELETE dan UPDATE. Untuk reset testing, disable trigger dulu.
+**Invoice:** `INV17788236015604D96D671`  
+**Timeline:** 12:40:01 order dibuat → 12:41:10 picked_up (1 menit 9 detik total)
 
 ## Manual Sandbox Verification Checklist
 
 - [x] Authenticate as storefront customer
 - [x] Add active product variant with stock to cart
-- [x] Start checkout — DOKU hosted page opens
+- [x] Start checkout — DOKU SDK overlay opens (not new tab)
 - [x] Checkout creation fails with 401 without real user token
 - [x] Complete payment in DOKU sandbox simulator
-- [ ] Confirm DOKU HTTP Notification reaches `doku-webhook` directly (without reconcile fallback)
+- [x] `/checkout-result` auto-reconcile → paid state without manual click
 - [x] `orders.invoice_number` moves from `pending_payment` to `pending_pickup` with pickup code
+- [x] QR code visible in checkout result page
+- [x] QR code visible in `/my-orders` card (tab "Siap Diambil")
+- [x] QR code visible in `/my-orders/:invoice` detail page
+- [x] Admin scan QR on mobile → preview modal → confirm → `picked_up`
+- [x] Admin manual input pickup code → same flow as scan
+- [x] `pickup_codes.verified_at` and `orders.picked_up_at` recorded correctly
+- [x] Inventory reservation finalized after payment
 - [ ] Replay same paid notification — confirm no duplicate pickup code
 - [ ] Simulate expired payment — confirm `orders.status = expired`
-- [x] `/checkout-result?invoice=<invoice>` as owning user shows paid state clearly
-- [ ] Same URL logged out or as different user — confirm RLS-denied vs missing distinction
+- [ ] DOKU HTTP Notification direct (without reconcile fallback)
 
 ## Reconcile Function — Verified Behavior
 
@@ -60,8 +64,8 @@ Full sandbox flow confirmed working:
 
 ## Deployment Health Checks
 
-- `DOKU_NOTIFICATION_URL` set in Supabase secrets → `https://xyhdnprncjvhtdfyovpx.functions.supabase.co/doku-webhook`
+- `DOKU_NOTIFICATION_URL` set → `https://xyhdnprncjvhtdfyovpx.functions.supabase.co/doku-webhook` ✅
 - `GET` to webhook URL returns `200` ✅
-- Signed sandbox notification accepted ✅
-- Invalid signature returns `401` ✅
-- No DOKU signature headers returns `CONTINUE` ✅
+- `product-images` storage bucket — admin INSERT/UPDATE/DELETE policies ✅
+- `banners` table + RLS ✅
+- `product_categories` table + RLS ✅
