@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { Minus, Plus, Trash, X } from '@phosphor-icons/react';
 import { useUIStore } from '../../store/uiStore';
-import { isSupabaseConfigured, supabase } from '../../lib/supabase';
+import { isSupabaseConfigured } from '../../lib/supabase';
 import {
   getOrCreateActiveCart,
   listCartItems,
@@ -13,6 +13,7 @@ import {
 import { createDokuCheckout } from '../../services/commerce';
 import { loadDokuCheckoutScript, openDokuCheckout } from '../../utils/dokuCheckout';
 import type { CartItem } from '../../types/commerce';
+import { useAuthUser } from '../../hooks/useCartSummary';
 
 const IDR = new Intl.NumberFormat('id-ID', {
   style: 'currency',
@@ -20,48 +21,11 @@ const IDR = new Intl.NumberFormat('id-ID', {
   maximumFractionDigits: 0,
 });
 
-type AuthState = {
-  userId: string | null;
-  email: string | null;
-};
-
-function useAuthState(): AuthState {
-  const [state, setState] = useState<AuthState>({ userId: null, email: null });
-
-  useEffect(() => {
-    if (!supabase || !isSupabaseConfigured) return;
-
-    let active = true;
-
-    supabase.auth.getSession().then(({ data }) => {
-      if (!active) return;
-      setState({
-        userId: data.session?.user.id ?? null,
-        email: data.session?.user.email ?? null,
-      });
-    });
-
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
-      setState({
-        userId: session?.user.id ?? null,
-        email: session?.user.email ?? null,
-      });
-    });
-
-    return () => {
-      active = false;
-      subscription.subscription.unsubscribe();
-    };
-  }, []);
-
-  return state;
-}
-
 export function CartDrawer() {
   const cartDrawerOpen = useUIStore((state) => state.cartDrawerOpen);
   const setCartDrawerOpen = useUIStore((state) => state.setCartDrawerOpen);
   const navigate = useNavigate();
-  const { userId, email } = useAuthState();
+  const { userId, email } = useAuthUser();
   const queryClient = useQueryClient();
 
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
