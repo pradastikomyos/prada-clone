@@ -22,9 +22,12 @@ export function isPickupReady(order: OrderLike) {
   const hasCode = Array.isArray(codes)
     ? codes.length > 0
     : codes != null;
+  // Show QR for both pending_pickup AND picked_up — for demo/skripsi purposes
+  // so the QR remains visible in history even after the order has been collected.
+  const status = normalize(order.status);
   return Boolean(
     normalize(order.payment_status) === 'paid' &&
-      normalize(order.status) === 'pending_pickup' &&
+      (status === 'pending_pickup' || status === 'picked_up') &&
       hasCode,
   );
 }
