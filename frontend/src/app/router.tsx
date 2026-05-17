@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter, Navigate, useRouteError } from 'react-router-dom';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 import { RootLayout } from '../components/layout/RootLayout';
 
@@ -44,12 +44,59 @@ function PageFallback() {
   return <div className="page-fallback" aria-hidden="true" />;
 }
 
+/**
+ * Handles stale chunk errors after a new deployment.
+ * When Vite rebuilds with new hashes, old cached chunk URLs 404.
+ * This catches that and reloads the page once to get fresh assets.
+ */
+function ChunkErrorBoundary() {
+  const error = useRouteError() as Error | null;
+  const isChunkError =
+    error instanceof TypeError &&
+    (error.message.includes('Failed to fetch dynamically imported module') ||
+      error.message.includes('Importing a module script failed'));
+
+  if (isChunkError) {
+    // Auto-reload once to pick up new assets from the latest deploy
+    if (!sessionStorage.getItem('chunk-reload')) {
+      sessionStorage.setItem('chunk-reload', '1');
+      window.location.reload();
+      return null;
+    }
+    // If reload didn't fix it, show a friendly message
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16, padding: 24, fontFamily: 'sans-serif' }}>
+        <p style={{ fontSize: 15, color: '#555', textAlign: 'center', maxWidth: 360 }}>
+          Versi baru tersedia. Silakan refresh halaman untuk melanjutkan.
+        </p>
+        <button
+          type="button"
+          onClick={() => { sessionStorage.removeItem('chunk-reload'); window.location.reload(); }}
+          style={{ padding: '10px 24px', background: '#111', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 14, fontWeight: 600 }}
+        >
+          Refresh Halaman
+        </button>
+      </div>
+    );
+  }
+
+  // Non-chunk error — show generic message
+  return (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 12, padding: 24, fontFamily: 'sans-serif' }}>
+      <p style={{ fontSize: 15, color: '#555', textAlign: 'center', maxWidth: 360 }}>
+        Terjadi kesalahan. Silakan kembali ke beranda.
+      </p>
+      <a href="/" style={{ padding: '10px 24px', background: '#111', color: '#fff', borderRadius: 8, textDecoration: 'none', fontSize: 14, fontWeight: 600 }}>
+        Kembali ke Beranda
+      </a>
+    </div>
+  );
+}
+
 export const router = createBrowserRouter([
   {
-    // RootLayout is the persistent shell for every route.
-    // It renders HomepageMenu, SearchOverlay, CartDrawer (all need RouterContext)
-    // and then <Outlet /> for the matched child route.
     element: <RootLayout />,
+    errorElement: <ChunkErrorBoundary />,
     children: [
       // ── Public routes ────────────────────────────────────────────────
       { path: '/', element: <HomePage /> },
